@@ -2,22 +2,20 @@
 /**
  * Created by PhpStorm.
  * User: Popov
- * Date: 29.11.2016 г.
- * Time: 14:21
+ * Date: 6.12.2016 г.
+ * Time: 9:43
  */
 
-namespace FPopov\Repositories\User;
+namespace FPopov\Repositories\Role;
 
 
 use FPopov\Adapter\DatabaseInterface;
 use FPopov\Repositories\AbstractRepository;
 
-class UserRepository extends AbstractRepository implements UserRepositoryInterface
+class RoleRepository extends AbstractRepository implements RoleRepositoryInterface
 {
     protected $db;
-    /**
-     * UserRepository constructor.
-     */
+
     public function __construct(DatabaseInterface $db)
     {
         parent::__construct($db);
@@ -27,7 +25,7 @@ class UserRepository extends AbstractRepository implements UserRepositoryInterfa
     public function setOptions()
     {
         return [
-            'tableName' => 'users',
+            'tableName' => 'roles',
             'primaryKeyName' => 'id'
         ];
     }

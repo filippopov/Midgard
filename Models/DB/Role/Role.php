@@ -2,17 +2,17 @@
 /**
  * Created by PhpStorm.
  * User: Popov
- * Date: 29.11.2016 г.
- * Time: 11:37
+ * Date: 6.12.2016 г.
+ * Time: 9:53
  */
 
-namespace FPopov\Models\DB\Category;
+namespace FPopov\Models\DB\Role;
 
 
-class Category
+class Role
 {
-    private $name;
     private $id;
+    private $name;
 
     /**
      * @return mixed
@@ -29,6 +29,7 @@ class Category
     {
         $this->id = $id;
     }
+
     /**
      * @return mixed
      */
@@ -44,4 +45,6 @@ class Category
     {
         $this->name = $name;
     }
+
+
 }

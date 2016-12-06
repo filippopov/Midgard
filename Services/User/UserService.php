@@ -12,15 +12,21 @@ namespace FPopov\Services\User;
 use FPopov\Adapter\DatabaseInterface;
 use FPopov\Core\MVC\Message;
 use FPopov\Models\Binding\User\UserProfileEditBindingModel;
+use FPopov\Models\DB\Role\Role;
 use FPopov\Models\DB\User\User;
+use FPopov\Repositories\Role\RoleRepository;
+use FPopov\Repositories\Role\RoleRepositoryInterface;
 use FPopov\Repositories\User\UserRepository;
 use FPopov\Repositories\User\UserRepositoryInterface;
+use FPopov\Repositories\UserRole\UserRoleRepository;
+use FPopov\Repositories\UserRole\UserRoleRepositoryInterface;
 use FPopov\Services\AbstractService;
 use FPopov\Services\Application\EncryptionServiceInterface;
 
 class UserService extends AbstractService  implements UserServiceInterface
 {
     const IS_ACTIVE = 1;
+    const USER_ROLE = 'user';
 
     private $db;
     private $encryptionService;
@@ -28,11 +34,23 @@ class UserService extends AbstractService  implements UserServiceInterface
     /** @var  UserRepository */
     private $userRepository;
 
-    public function __construct(DatabaseInterface $db, EncryptionServiceInterface $encryptionService, UserRepositoryInterface $userRepository)
+    /** @var RoleRepository */
+    private $roleRepository;
+    /** @var  UserRoleRepository */
+    private $userRoleRepository;
+
+    public function __construct(
+        DatabaseInterface $db,
+        EncryptionServiceInterface $encryptionService,
+        UserRepositoryInterface $userRepository,
+        RoleRepositoryInterface $roleRepository,
+        UserRoleRepositoryInterface $userRoleRepository)
     {
         $this->db = $db;
         $this->encryptionService = $encryptionService;
         $this->userRepository = $userRepository;
+        $this->roleRepository = $roleRepository;
+        $this->userRoleRepository = $userRoleRepository;
     }
 
     public function register($username, $password) : bool
@@ -60,15 +78,25 @@ class UserService extends AbstractService  implements UserServiceInterface
             'is_active' => self::IS_ACTIVE
         ]);
 
+        /** @var User $user */
+        $user = $this->userRepository->findByCondition(['username' => $username], User::class);
 
+        /** @var Role $role */
+        $role = $this->roleRepository->findByCondition(['name' => self::USER_ROLE], Role::class);
 
-        if ($userRegister) {
+        $userRole = $this->userRoleRepository->create([
+            'user_id' => $user->getId(),
+            'role_id' => $role->getId()
+        ]);
+
+        if ($userRegister && $userRole) {
             Message::postMessage('Successfully register user', Message::POSITIVE_MESSAGE);
         } else {
             Message::postMessage('Please try again', Message::NEGATIVE_MESSAGE);
+            return false;
         }
 
-        return $userRegister;
+        return true;
     }
 
     public function findOne($id) : User

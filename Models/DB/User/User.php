@@ -29,7 +29,7 @@ class User
 
     private $birthday;
 
-    private $isActive;
+    private $is_active;
 
     /**
      * @return mixed
@@ -180,7 +180,7 @@ class User
      */
     public function getIsActive()
     {
-        return $this->isActive;
+        return $this->is_active;
     }
 
     /**
@@ -188,6 +188,6 @@ class User
      */
     public function setIsActive($isActive)
     {
-        $this->isActive = $isActive;
+        $this->is_active = $isActive;
     }
 }

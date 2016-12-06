@@ -15,6 +15,7 @@ use FPopov\Models\DB\User\User;
 use FPopov\Repositories\User\UserRepository;
 use FPopov\Repositories\User\UserRepositoryInterface;
 use FPopov\Services\AbstractService;
+use FPopov\Services\User\UserService;
 
 class AuthenticationService extends AbstractService implements AuthenticationServiceInterface
 {
@@ -61,7 +62,7 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
 
         $hash = $user->getPassword();
 
-        if ($this->encryptionService->verify($password, $hash)) {
+        if ($this->encryptionService->verify($password, $hash) && $user->getIsActive() == UserService::IS_ACTIVE) {
             $this->session->set('id', $user->getId());
             return true;
         }

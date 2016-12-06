@@ -78,8 +78,9 @@ $app->registerDependency(\FPopov\Services\User\UserServiceInterface::class, \FPo
 $app->registerDependency(\FPopov\Services\Application\EncryptionServiceInterface::class, \FPopov\Services\Application\BCryptEncryptionService::class);
 $app->registerDependency(\FPopov\Services\Application\AuthenticationServiceInterface::class, \FPopov\Services\Application\AuthenticationService::class);
 $app->registerDependency(\FPopov\Services\Application\ResponseServiceInterface::class, \FPopov\Services\Application\ResponseService::class);
-$app->registerDependency(\FPopov\Services\Category\CategoryServiceInterface::class, \FPopov\Services\Category\CategoryService::class);
 $app->registerDependency(\FPopov\Repositories\User\UserRepositoryInterface::class, \FPopov\Repositories\User\UserRepository::class);
-$app->registerDependency(\FPopov\Repositories\Categories\CategoryRepositoryInterface::class, \FPopov\Repositories\Categories\CategoryRepository::class);
+$app->registerDependency(\FPopov\Repositories\Role\RoleRepositoryInterface::class, \FPopov\Repositories\Role\RoleRepository::class);
+$app->registerDependency(\FPopov\Repositories\UserRole\UserRoleRepositoryInterface::class, \FPopov\Repositories\UserRole\UserRoleRepository::class);
+
 
 $app->start();
