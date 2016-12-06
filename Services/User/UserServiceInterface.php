@@ -20,5 +20,4 @@ interface UserServiceInterface
 
     public function edit(UserProfileEditBindingModel $bindingModel);
 
-    public function findAllHeroesForCurrentUser($params = []);
 }

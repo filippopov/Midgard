@@ -56,7 +56,7 @@ class UsersController
         $loginResult = $this->authenticationService->login($username, $password);
 
         if ($loginResult) {
-            $this->responseService->redirect('users', 'choseHeroToPlay');
+            $this->responseService->redirect('heroes', 'choseHeroToPlay');
             exit();
         }
 
@@ -137,21 +137,5 @@ class UsersController
         $this->service->edit($bindingModel);
 
         $this->responseService->redirect('users', 'profile');
-    }
-
-    public function choseHeroToPlay()
-    {
-        if (! $this->authenticationService->isAuthenticated()) {
-            $this->responseService->redirect('users', 'login');
-        }
-
-        $getParams = $this->MVCContext->getGetParams();
-        $userId = $this->authenticationService->getUserId();
-
-        $getParams['userId'] = $userId;
-        $heroes = $this->service->findAllHeroesForCurrentUser($getParams);
-
-        $params = ['model' => $heroes];
-        $this->view->render($params);
     }
 }

@@ -89,6 +89,8 @@ $app->registerDependency(\FPopov\Services\Application\ResponseServiceInterface::
 $app->registerDependency(\FPopov\Repositories\User\UserRepositoryInterface::class, \FPopov\Repositories\User\UserRepository::class);
 $app->registerDependency(\FPopov\Repositories\Role\RoleRepositoryInterface::class, \FPopov\Repositories\Role\RoleRepository::class);
 $app->registerDependency(\FPopov\Repositories\UserRole\UserRoleRepositoryInterface::class, \FPopov\Repositories\UserRole\UserRoleRepository::class);
+$app->registerDependency(\FPopov\Repositories\Hero\HeroRepositoryInterface::class, \FPopov\Repositories\Hero\HeroRepository::class);
+$app->registerDependency(\FPopov\Services\Hero\HeroServiceInterface::class, \FPopov\Services\Hero\HeroService::class);
 
 
 $app->start();
