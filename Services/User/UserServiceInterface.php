@@ -19,4 +19,6 @@ interface UserServiceInterface
     public function findOne($id) : User;
 
     public function edit(UserProfileEditBindingModel $bindingModel);
+
+    public function findAllHeroesForCurrentUser($params = []);
 }

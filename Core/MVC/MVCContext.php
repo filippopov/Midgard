@@ -28,7 +28,7 @@ class MVCContext implements MVCContextInterface
      * @param array $arguments
      * @param $uriJunk
      */
-    public function __construct(string $controller, string $action, string $uriJunk, array $arguments, array $getParams)
+    public function __construct(string $controller, string $action, $uriJunk, array $arguments, array $getParams)
     {
         $this->controller = $controller;
         $this->action = $action;

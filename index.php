@@ -1,19 +1,23 @@
 <?php
+const DEFAULT_CONTROLLER = 'default';
+const DEFAULT_ACTION = 'defaultAction';
 
 include 'autoloader.php';
 include 'helper.php';
+
 
 session_start();
 
 $uri = $_SERVER['REQUEST_URI'];
 $self = $_SERVER['PHP_SELF'];
 
-$uri = strtolower($uri);
-$self = strtolower($self);
-
 $self = str_replace('index.php', '', $self);
 
-$uri = str_replace($self, '', $uri);
+if ($self != '/') {
+    $uri = str_replace($self, '', $uri);
+} else {
+    $uri = substr($uri, 1);
+}
 
 $getParams = explode('?', $uri);
 
@@ -28,7 +32,6 @@ if(! empty($getParams)) {
         $getParams[$key] = $arr;
     }
 }
-$test = array_values($getParams);
 
 foreach ($getParams as $key => $value) {
     if (is_array($value)) {
@@ -64,6 +67,11 @@ $dbInstanceName = 'default';
     \FPopov\Config\DbConfig::DB_NAME,
     $dbInstanceName
 );
+
+if (empty($controllerName) && empty($actionName)) {
+    $controllerName = DEFAULT_CONTROLLER;
+    $actionName = DEFAULT_ACTION;
+}
 
 $mvcContext = new \FPopov\Core\MVC\MVCContext($controllerName, $actionName, $self, $args, $getParams);
 

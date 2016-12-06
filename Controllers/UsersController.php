@@ -9,6 +9,7 @@
 namespace FPopov\Controllers;
 
 
+use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
 use FPopov\Models\Binding\User\UserLoginBindingModel;
 use FPopov\Models\Binding\User\UserProfileEditBindingModel;
@@ -25,17 +26,21 @@ class UsersController
     private $service;
     private $authenticationService;
     private $responseService;
+    private $MVCContext;
+
 
     public function __construct(
         ViewInterface $view,
         UserServiceInterface $service,
         AuthenticationServiceInterface $authenticationService,
-        ResponseServiceInterface $responseService)
+        ResponseServiceInterface $responseService,
+        MVCContext $MVCContext)
     {
         $this->view = $view;
         $this->service = $service;
         $this->authenticationService = $authenticationService;
         $this->responseService = $responseService;
+        $this->MVCContext = $MVCContext;
     }
 
     public function login()
@@ -51,7 +56,7 @@ class UsersController
         $loginResult = $this->authenticationService->login($username, $password);
 
         if ($loginResult) {
-            $this->responseService->redirect('users', 'profile');
+            $this->responseService->redirect('users', 'choseHeroToPlay');
             exit();
         }
 
@@ -71,7 +76,7 @@ class UsersController
 
         $registerResult = $this->service->register($username, $password);
         if ($registerResult) {
-            $this->responseService->redirect('users', 'login');
+            $this->responseService->redirect('default', 'defaultAction');
             exit();
         }
 
@@ -132,5 +137,21 @@ class UsersController
         $this->service->edit($bindingModel);
 
         $this->responseService->redirect('users', 'profile');
+    }
+
+    public function choseHeroToPlay()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        $getParams = $this->MVCContext->getGetParams();
+        $userId = $this->authenticationService->getUserId();
+
+        $getParams['userId'] = $userId;
+        $heroes = $this->service->findAllHeroesForCurrentUser($getParams);
+
+        $params = ['model' => $heroes];
+        $this->view->render($params);
     }
 }

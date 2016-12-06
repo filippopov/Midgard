@@ -11,6 +11,7 @@ namespace FPopov\Services\User;
 
 use FPopov\Adapter\DatabaseInterface;
 use FPopov\Core\MVC\Message;
+use FPopov\Core\ViewInterface;
 use FPopov\Models\Binding\User\UserProfileEditBindingModel;
 use FPopov\Models\DB\Role\Role;
 use FPopov\Models\DB\User\User;
@@ -30,6 +31,7 @@ class UserService extends AbstractService  implements UserServiceInterface
 
     private $db;
     private $encryptionService;
+    private $view;
 
     /** @var  UserRepository */
     private $userRepository;
@@ -44,13 +46,15 @@ class UserService extends AbstractService  implements UserServiceInterface
         EncryptionServiceInterface $encryptionService,
         UserRepositoryInterface $userRepository,
         RoleRepositoryInterface $roleRepository,
-        UserRoleRepositoryInterface $userRoleRepository)
+        UserRoleRepositoryInterface $userRoleRepository,
+        ViewInterface $view)
     {
         $this->db = $db;
         $this->encryptionService = $encryptionService;
         $this->userRepository = $userRepository;
         $this->roleRepository = $roleRepository;
         $this->userRoleRepository = $userRoleRepository;
+        $this->view = $view;
     }
 
     public function register($username, $password) : bool
@@ -121,5 +125,138 @@ class UserService extends AbstractService  implements UserServiceInterface
         ];
 
         return $this->userRepository->update($bindingModel->getId(), $params);
+    }
+
+//    public function findAll($params)
+//    {
+//        $bindFilter = $this->getParamFilters($params);
+//
+//        $structure = [
+//            'id' => [
+//                'title' => 'Id',
+//                'type' => self::TYPE_DATA
+//            ],
+//            'name' => [
+//                'title' => 'Name',
+//                'type' => self::TYPE_DATA
+//            ],
+//            'actions' => array(
+//                'title' => 'Actions',
+//                'type' => self::TYPE_ACTIONS,
+//                'values' => array(
+//                    'edit' => function ($row) {
+//                        return $this->view->uri('categories', 'edit', [], ['id' => $row['id']]);
+//                    },
+//                    'delete' => function  ($row) {
+//                        return $this->view->uri('categories', 'deleteCategory', [], ['id' => $row['id']]);
+//                    }
+//                )
+//            )
+//        ];
+//
+//        $repoData = $this->categoryRepository->testGrid($bindFilter);
+//        $bindFilter['total'] = $this->categoryRepository->testGridCount($bindFilter);
+//        $data = $this->generateGridData($structure, $repoData);
+//
+//        $searchFields = [
+//            'id' => 'Id',
+//            'name' => 'Name Category'
+//        ];
+//
+//        $table = [
+//            'tableSearchFields' => $searchFields,
+//            'tableData' => $data,
+//            'filter' => $this->pageFilters($bindFilter),
+//        ];
+//
+//        return $table;
+//    }
+
+    public function findAllHeroesForCurrentUser($params = [])
+    {
+        $allowParams = ['userId'];
+        $bindFilter = $this->getParamFilters($params, $allowParams);
+
+        $listOfFields = [
+            'h.id',
+            'h.name AS hero_name',
+            'toh.name AS hero_type',
+            'l.level_number AS level',
+            'l.to_experience',
+            'c.name AS city_name',
+            'c.coordinates_x',
+            'c.coordinates_y',
+            'h.experience'
+        ];
+
+        $structure = [
+            'hero_name' => [
+                'title' => 'Hero Name',
+                'type' => self::TYPE_DATA
+            ],
+            'hero_type' => [
+                'title' => 'Hero Type',
+                'type' => self::TYPE_DATA
+            ],
+            'level' => [
+                'title' => 'Level',
+                'type' => self::TYPE_DATA
+            ],
+            'experience' => [
+                'title' => 'Experience',
+                'type' => self::TYPE_DATA
+            ],
+            'to_experience' => [
+                'title' => 'Experience to level',
+                'type' => self::TYPE_DATA
+            ],
+            'city_name' => [
+                'title' => 'City',
+                'type' => self::TYPE_DATA
+            ],
+            'coordinates_x' => [
+                'title' => 'Coordinates X',
+                'type' => self::TYPE_DATA
+            ],
+            'coordinates_y' => [
+                'title' => 'Coordinates Y',
+                'type' => self::TYPE_DATA
+            ],
+            'actions' => array(
+                'title' => 'Actions',
+                'type' => self::TYPE_ACTIONS,
+                'values' => array(
+                    'delete' => function  ($row) {
+                        return $this->view->uri('users', 'deleteHero', [], ['id' => $row['id']]);
+                    }
+                )
+            ),
+            'id' => [
+                'title' => 'Play',
+                'type' => self::TYPE_DATA,
+                'value' => function ($value) {
+                    return 'Play';
+                },
+                'onClick' => function ($value) {
+                    return $this->view->uri('users', 'playHero', ['heroId' => $value]);
+                }
+            ]
+        ];
+
+        $repoData = $this->userRepository->findAllHeroesForCurrentUser($bindFilter);
+        $bindFilter['total'] = $this->userRepository->findAllHeroesForCurrentUserCount($bindFilter);
+        $data = $this->generateGridData($structure, $repoData);
+
+        $searchFields = [
+            'name' => 'Hero Name'
+        ];
+
+        $table = [
+            'tableSearchFields' => $searchFields,
+            'tableData' => $data,
+            'filter' => $this->pageFilters($bindFilter),
+        ];
+
+        return $table;
     }
 }

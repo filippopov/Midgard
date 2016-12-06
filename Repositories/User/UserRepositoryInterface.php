@@ -11,5 +11,7 @@ namespace FPopov\Repositories\User;
 
 interface UserRepositoryInterface
 {
+    public function findAllHeroesForCurrentUser($params = []);
 
+    public function findAllHeroesForCurrentUserCount($params = []);
 }

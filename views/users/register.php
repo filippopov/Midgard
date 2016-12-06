@@ -23,6 +23,7 @@
                 </div>
                 <div class="form-group">
                     <div class="col-lg-10 col-lg-offset-2">
+                        <a href="<?php echo $this->uri('default', 'defaultAction')?>" class="btn btn-default">Cancel</a>
                         <button name="register" type="submit" class="btn btn-primary">Register</button>
                     </div>
                 </div>
