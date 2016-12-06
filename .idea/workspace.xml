@@ -87,7 +87,7 @@
       <file leaf-file-name="UserService.php" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Services/User/UserService.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="544">
+            <state relative-caret-position="442">
               <caret line="62" column="0" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
               <folding />
             </state>
@@ -370,12 +370,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1481005796436</updated>
-      <workItem from="1481005797610" duration="3568000" />
+      <workItem from="1481005797610" duration="3631000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3568000" />
+    <option name="totallyTimeSpent" value="3631000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="0" width="1924" height="1050" extended-state="0" />
@@ -558,7 +558,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Services/User/UserService.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
+        <state relative-caret-position="442">
           <caret line="62" column="0" selection-start-line="62" selection-start-column="0" selection-end-line="62" selection-end-column="0" />
           <folding />
         </state>
