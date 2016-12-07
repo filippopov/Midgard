@@ -317,6 +317,9 @@ class HeroService extends AbstractService implements HeroServiceInterface
     {
         $heroId = $this->authenticationService->getHeroId();
 
-        
+        $params = [$heroId];
+        $information = $this->heroRepository->heroInformation($params);
+
+        return $information;
     }
 }

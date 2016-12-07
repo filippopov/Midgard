@@ -18,4 +18,6 @@ interface HeroRepositoryInterface
     public function changeStatus($heroId);
 
     public function changeStatusOfHeroes($params = []);
+
+    public function heroInformation($params = []);
 }

@@ -132,4 +132,46 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
 
         return $stmt->execute($params);
     }
+
+    public function heroInformation($params = [])
+    {
+        $query = "
+            SELECT
+                h.name AS hero_name,
+                h.real_health,
+                h.real_mana,
+                h.experience,
+                c.name AS city_name,
+                l.level_number,
+                l.to_experience AS experience_to_next_level,
+                toh.name AS hero_type,
+                toh.strength,
+                toh.vitality,
+                toh.dexterity,
+                toh.health AS max_health,
+                toh.mana AS max_mana,
+                toh.megic,
+                group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources
+            FROM 
+                resources AS r
+            INNER JOIN 
+                type_of_resources AS tor ON (r.type_of_resources_id = tor.id)
+            INNER JOIN 
+                heroes AS h ON (r.heroes_id = h.id)
+            INNER JOIN 
+                type_of_heroes AS toh ON (h.type_of_heroes_id = toh.id)
+            INNER JOIN 
+                level AS l ON (h.level_id = l.id)
+            INNER JOIN 
+                city AS c ON (h.city_id = c.id)
+            WHERE 
+                h.id = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }
