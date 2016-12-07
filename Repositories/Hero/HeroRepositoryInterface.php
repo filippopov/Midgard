@@ -14,4 +14,6 @@ interface HeroRepositoryInterface
     public function findAllHeroesForCurrentUser($params = []);
 
     public function findAllHeroesForCurrentUserCount($params = []);
+
+    public function changeStatus($heroId);
 }

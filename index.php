@@ -94,6 +94,9 @@ $app->registerDependency(\FPopov\Services\Hero\HeroServiceInterface::class, \FPo
 $app->registerDependency(\FPopov\Repositories\TypeOfHeroes\TypeOfHeroesRepositoryInterface::class, \FPopov\Repositories\TypeOfHeroes\TypeOfHeroesRepository::class);
 $app->registerDependency(\FPopov\Repositories\Level\LevelRepositoryInterface::class, \FPopov\Repositories\Level\LevelRepository::class);
 $app->registerDependency(\FPopov\Repositories\City\CityRepositoryInterface::class, \FPopov\Repositories\City\CityRepository::class);
+$app->registerDependency(\FPopov\Repositories\TypeOfResources\TypeOfResourcesRepositoryInterface::class, \FPopov\Repositories\TypeOfResources\TypeOfResourcesRepository::class);
+$app->registerDependency(\FPopov\Repositories\Resources\ResourcesRepositoryInterface::class, \FPopov\Repositories\Resources\ResourcesRepository::class);
+$app->registerDependency(\FPopov\Services\Game\GameServicesInterface::class, \FPopov\Services\Game\GameServices::class);
 
 
 $app->start();

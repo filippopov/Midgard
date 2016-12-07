@@ -54,33 +54,6 @@ class HeroesController
         $this->view->render($params);
     }
 
-//    public function addGridCategory(CategoryAddBindingModel $bindingModel)
-//    {
-//        $name = $bindingModel->getName();
-//        if (! empty($name)) {
-//            $categoryCreate = $this->categoryService->generateGridCategory($name);
-//            $result['success'] = $categoryCreate ? true : false;
-//
-//            if (! $categoryCreate) {
-//                $result['message'] = Message::returnMessages();
-//            }
-//
-//            echo json_encode($result);
-//            die();
-//        }
-//
-//        $addGridCategory = $this->categoryService->addGridCategory();
-//
-//        $params = [
-//            'model' => $addGridCategory,
-//            'withHeader' => false,
-//            'withFooter' => false,
-//            'isMessage' => false
-//        ];
-//
-//        $this->view->render($params);
-//    }
-
     public function createHero(HeroCreateBindingModel $bindingModel)
     {
         $heroName = $bindingModel->getHeroName();
@@ -109,5 +82,13 @@ class HeroesController
         ];
 
         $this->view->render($params);
+    }
+
+    public function removeHero()
+    {
+        $heroId = $this->MVCContext->getOneGetParam('heroId');
+        $result = $this->service->removeHero($heroId);
+
+        return $result;
     }
 }

@@ -11,6 +11,7 @@ namespace FPopov\Repositories\Hero;
 
 use FPopov\Adapter\DatabaseInterface;
 use FPopov\Repositories\AbstractRepository;
+use FPopov\Services\Hero\HeroService;
 
 class HeroRepository extends AbstractRepository implements HeroRepositoryInterface
 {
@@ -74,7 +75,8 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                     level as l ON (h.level_id = l.id)
                 INNER JOIN city AS c ON (h.city_id = c.id)
             WHERE 
-                h.user_id = :userId 
+                h.user_id = :userId
+                AND h.hero_status != :deleteHeroStatus 
         ";
 
         $query .= $where . $order . $limit;
@@ -93,5 +95,23 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
         $result = $this->findAllHeroesForCurrentUser($params);
 
         return isset($result[0]) ? $result[0]['count'] : 0;
+    }
+
+    public function changeStatus($heroId)
+    {
+        $deleteStatus = HeroService::DELETE_HERO_STATUS;
+        $params = [$deleteStatus, $heroId];
+        $query = "
+            UPDATE
+                heroes AS h
+            SET
+                h.hero_status = ?
+            WHERE
+                h.id = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        return $stmt->execute($params);
     }
 }
