@@ -91,6 +91,9 @@ $app->registerDependency(\FPopov\Repositories\Role\RoleRepositoryInterface::clas
 $app->registerDependency(\FPopov\Repositories\UserRole\UserRoleRepositoryInterface::class, \FPopov\Repositories\UserRole\UserRoleRepository::class);
 $app->registerDependency(\FPopov\Repositories\Hero\HeroRepositoryInterface::class, \FPopov\Repositories\Hero\HeroRepository::class);
 $app->registerDependency(\FPopov\Services\Hero\HeroServiceInterface::class, \FPopov\Services\Hero\HeroService::class);
+$app->registerDependency(\FPopov\Repositories\TypeOfHeroes\TypeOfHeroesRepositoryInterface::class, \FPopov\Repositories\TypeOfHeroes\TypeOfHeroesRepository::class);
+$app->registerDependency(\FPopov\Repositories\Level\LevelRepositoryInterface::class, \FPopov\Repositories\Level\LevelRepository::class);
+$app->registerDependency(\FPopov\Repositories\City\CityRepositoryInterface::class, \FPopov\Repositories\City\CityRepository::class);
 
 
 $app->start();

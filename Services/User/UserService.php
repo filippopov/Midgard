@@ -82,15 +82,15 @@ class UserService extends AbstractService  implements UserServiceInterface
             'is_active' => self::IS_ACTIVE
         ]);
 
-        /** @var User $user */
+        /** @var User[] $user */
         $user = $this->userRepository->findByCondition(['username' => $username], User::class);
 
-        /** @var Role $role */
+        /** @var Role[] $role */
         $role = $this->roleRepository->findByCondition(['name' => self::USER_ROLE], Role::class);
 
         $userRole = $this->userRoleRepository->create([
-            'user_id' => $user->getId(),
-            'role_id' => $role->getId()
+            'user_id' => $user[0]->getId(),
+            'role_id' => $role[0]->getId()
         ]);
 
         if ($userRegister && $userRole) {

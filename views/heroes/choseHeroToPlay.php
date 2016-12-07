@@ -10,7 +10,7 @@ $getParams = isset($getParams) ? $getParams : '';
 <?php require_once 'views/partials/grid/filter.php'; ?>
 
     <div class="save-button-container">
-        <input type="button"  class="btn btn-default" value="Create new" onclick="createOrUpdate('<?php echo $this->uri('heroes', 'createHero')?>')" />
+        <input type="button"  class="btn btn-default" value="Create New Hero" onclick="createOrUpdate('<?php echo $this->uri('heroes', 'createHero')?>')" />
     </div>
 
     <div id="tablesContainer" class="col-md-12">

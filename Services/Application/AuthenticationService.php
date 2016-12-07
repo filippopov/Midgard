@@ -52,7 +52,7 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
             'username' => $username
         ];
 
-        /** @var User $user */
+        /** @var User[] $user */
         $user = $this->userRepository->findByCondition($userParams, User::class, null, 'asc', 1, 0);
 
         if (empty($user)) {
@@ -60,10 +60,10 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
             return false;
         }
 
-        $hash = $user->getPassword();
+        $hash = $user[0]->getPassword();
 
-        if ($this->encryptionService->verify($password, $hash) && $user->getIsActive() == UserService::IS_ACTIVE) {
-            $this->session->set('id', $user->getId());
+        if ($this->encryptionService->verify($password, $hash) && $user[0]->getIsActive() == UserService::IS_ACTIVE) {
+            $this->session->set('id', $user[0]->getId());
             return true;
         }
         Message::postMessage('Please enter valid password', Message::NEGATIVE_MESSAGE);

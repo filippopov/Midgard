@@ -132,7 +132,11 @@ abstract class AbstractRepository
         if (empty($dbClass)) {
             return $stmt->fetchAll();
         } else {
-            return $stmt->fetchObject($dbClass);
+            $arrOfObjects = [];
+            while ($result = $stmt->fetchObject($dbClass)) {
+                $arrOfObjects[] = $result;
+            }
+            return $arrOfObjects;
         }
     }
 
@@ -171,7 +175,11 @@ abstract class AbstractRepository
         if (empty($dbClass)) {
             return $stmt->fetchAll();
         } else {
-            return $stmt->fetchObject($dbClass);
+            $arrOfObjects = [];
+            while ($result = $stmt->fetchObject($dbClass)) {
+                $arrOfObjects[] = $result;
+            }
+            return $arrOfObjects;
         }
     }
 

@@ -86,7 +86,7 @@ class HeroesController
         $heroName = $bindingModel->getHeroName();
         $heroType = $bindingModel->getHeroType();
 
-        if (! empty($heroName) || ! empty($heroType)) {
+        if (! empty($_POST)) {
             $heroCreate = $this->service->addGridHero($heroName, $heroType);
 
             $result['success'] = $heroCreate ? true : false;
