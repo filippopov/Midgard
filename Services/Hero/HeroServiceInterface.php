@@ -18,4 +18,6 @@ interface HeroServiceInterface
     public function addGridHero($heroName, $heroType);
 
     public function removeHero($heroId);
+
+    public function heroInformation();
 }

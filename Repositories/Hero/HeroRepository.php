@@ -114,4 +114,22 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
 
         return $stmt->execute($params);
     }
+
+    public function changeStatusOfHeroes($params = [])
+    {
+        $query = "
+            UPDATE
+                heroes AS h
+            SET
+                h.hero_status = 0
+            WHERE
+                h.id != ?
+                AND h.user_id = ?
+                AND h.hero_status != ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        return $stmt->execute($params);
+    }
 }

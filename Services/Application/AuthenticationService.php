@@ -20,6 +20,7 @@ use FPopov\Services\User\UserService;
 class AuthenticationService extends AbstractService implements AuthenticationServiceInterface
 {
     const AUTHENTICATION_ID = 'id';
+    const AUTHENTICATION_HERO_ID = 'heroId';
 
     private $db;
     private $session;
@@ -39,6 +40,11 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
     public function isAuthenticated() : bool
     {
         return $this->session->exists(self::AUTHENTICATION_ID);
+    }
+
+    public function isAuthenticatedHero() : bool
+    {
+        return $this->session->exists(self::AUTHENTICATION_HERO_ID);
     }
 
     public function logout()
@@ -73,5 +79,10 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
     public function getUserId()
     {
         return $this->session->get(self::AUTHENTICATION_ID);
+    }
+
+    public function getHeroId()
+    {
+        return $this->session->get(self::AUTHENTICATION_HERO_ID);
     }
 }

@@ -18,4 +18,8 @@ interface AuthenticationServiceInterface
     public function login($username, $password) : bool;
 
     public function getUserId();
+
+    public function isAuthenticatedHero() : bool;
+
+    public function getHeroId();
 }

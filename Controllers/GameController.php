@@ -39,6 +39,14 @@ class GameController
 
     public function playHero($heroId)
     {
-        dd($heroId, 'V igrata sme');
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        $params['heroId'] = $heroId;
+        $menu = $this->gameServices->playHero($params);
+
+        $paramsView = ['model' => $menu];
+        $this->view->render($paramsView);
     }
 }

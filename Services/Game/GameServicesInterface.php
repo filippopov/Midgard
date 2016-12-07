@@ -11,5 +11,5 @@ namespace FPopov\Services\Game;
 
 interface GameServicesInterface
 {
-
+    public function playHero($params = []);
 }

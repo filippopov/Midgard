@@ -312,4 +312,11 @@ class HeroService extends AbstractService implements HeroServiceInterface
 
         return $dropDown;
     }
+
+    public function heroInformation()
+    {
+        $heroId = $this->authenticationService->getHeroId();
+
+        
+    }
 }

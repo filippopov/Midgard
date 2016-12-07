@@ -91,4 +91,23 @@ class HeroesController
 
         return $result;
     }
+
+    public function heroInformation()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $heroInformation = $this->service->heroInformation();
+
+        $params = [
+            'model' => $heroInformation
+        ];
+
+        $this->view->render($params);
+    }
 }
