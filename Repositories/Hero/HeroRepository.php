@@ -139,19 +139,75 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
         $query = "
               SELECT
                   h.name AS hero_name,
-                  h.real_health + ei.health AS real_health,
-                  h.real_mana + ei.mana AS real_mana,
+                  CASE 
+                      WHEN 
+                          ei.health IS NULL OR ei.health = '' 
+                      THEN 
+                          h.real_health 
+                      ELSE 
+                        h.real_health + ei.health
+                  END  AS real_health,
+                  CASE 
+                      WHEN 
+                          ei.mana IS NULL OR ei.mana = '' 
+                      THEN 
+                          h.real_mana 
+                      ELSE 
+                        h.real_mana + ei.mana
+                  END  AS real_mana,
                   h.experience,
-                  h.damage_low_value + ei.damage_low_value AS damage_low_value,
-                  h.damage_high_value + ei.damage_high_value AS damage_high_value,
-                  h.armor + ei.armor AS armor,
+                  CASE 
+                      WHEN 
+                          ei.damage_low_value IS NULL OR ei.damage_low_value = '' 
+                      THEN 
+                          h.damage_low_value 
+                      ELSE 
+                        h.damage_low_value + ei.damage_low_value
+                  END  AS damage_low_value,
+                  CASE 
+                      WHEN 
+                          ei.damage_high_value IS NULL OR ei.damage_high_value = '' 
+                      THEN 
+                          h.damage_high_value 
+                      ELSE 
+                        h.damage_high_value + ei.damage_high_value
+                  END  AS damage_high_value,
+                  CASE 
+                      WHEN 
+                          ei.armor IS NULL OR ei.armor = '' 
+                      THEN 
+                          h.armor 
+                      ELSE 
+                        h.armor + ei.armor
+                  END  AS armor,
                   h.strength,
                   h.magic,
                   h.vitality,
                   h.dexterity,
-                  h.health + ei.health AS max_health,
-                  h.mana + ei.mana AS max_mana,
-                  h.critical + ei.critical AS critical_chance,
+                  CASE 
+                      WHEN 
+                          ei.health IS NULL OR ei.health = '' 
+                      THEN 
+                          h.health 
+                      ELSE 
+                        h.health + ei.health
+                  END  AS max_health,
+                   CASE 
+                      WHEN 
+                          ei.mana IS NULL OR ei.mana = '' 
+                      THEN 
+                          h.mana 
+                      ELSE 
+                        h.mana + ei.mana
+                  END  AS max_mana,
+                  CASE 
+                      WHEN 
+                          ei.critical IS NULL OR ei.critical = '' 
+                      THEN 
+                          h.critical 
+                      ELSE 
+                          h.critical + ei.critical
+                  END  AS critical_chance,
                   c.name AS city_name,
                   l.level_number,
                   l.to_experience AS experience_to_next_level,
@@ -169,7 +225,7 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   city AS c ON (h.city_id = c.id)
               INNER JOIN 
                   type_of_heroes AS toh ON (h.type_of_heroes_id = toh.id)  
-              INNER JOIN (
+              LEFT JOIN (
                   SELECT
                       SUM(ceil(i.damage_low_value + (i.strength/2))) AS damage_low_value,
                       SUM(ceil(i.damage_high_value + (i.strength/2))) AS damage_high_value,
