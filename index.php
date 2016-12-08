@@ -97,6 +97,7 @@ $app->registerDependency(\FPopov\Repositories\City\CityRepositoryInterface::clas
 $app->registerDependency(\FPopov\Repositories\TypeOfResources\TypeOfResourcesRepositoryInterface::class, \FPopov\Repositories\TypeOfResources\TypeOfResourcesRepository::class);
 $app->registerDependency(\FPopov\Repositories\Resources\ResourcesRepositoryInterface::class, \FPopov\Repositories\Resources\ResourcesRepository::class);
 $app->registerDependency(\FPopov\Services\Game\GameServicesInterface::class, \FPopov\Services\Game\GameServices::class);
-
+$app->registerDependency(\FPopov\Repositories\TypeOfItems\TypeOfItemsRepositoryInterface::class, \FPopov\Repositories\TypeOfItems\TypeOfItemsRepository::class);
+$app->registerDependency(\FPopov\Repositories\Items\ItemsRepositoryInterface::class, \FPopov\Repositories\Items\ItemsRepository::class);
 
 $app->start();
