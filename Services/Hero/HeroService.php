@@ -47,6 +47,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
     const RESOURCES_TREE = 'tree';
 
     const DELETE_HERO_STATUS = 10;
+    const ITEM_IS_EQUIPED = 1;
 
     const TYPE_OF_HERO_WARRIOR = 'Warrior';
     const TYPE_OF_HERO_MARKSMAN = 'Marksman';
@@ -259,16 +260,36 @@ class HeroService extends AbstractService implements HeroServiceInterface
             return false;
         }
 
+        $strength = $getHeroTypeData->getStrength();
+        $vitality = $getHeroTypeData->getVitality();
+        $magic = $getHeroTypeData->getMagic();
+        $dexterity = $getHeroTypeData->getDexterity();
+        $damage = ceil($strength / 2);
+        $health = $getHeroTypeData->getHealth() + ($getHeroTypeData->getVitality() * 10);
+        $mana = $getHeroTypeData->getMana() + ($getHeroTypeData->getMagic() * 10);
+        $armor = $dexterity * 2;
+        $critical = $dexterity * 0.01;
+
         $heroParams = [
             'user_id' => $userId,
             'type_of_heroes_id' => $heroType,
             'level_id' => $level[0]->getId(),
             'city_id' => $city[0]->getId(),
-            'real_health' => $getHeroTypeData->getHealth(),
-            'real_mana' => $getHeroTypeData->getMana(),
+            'real_health' => $health,
+            'real_mana' => $mana,
             'experience' => 0,
             'name' => $heroName,
-            'hero_status' => 0
+            'hero_status' => 0,
+            'damage_low_value' => $damage,
+            'damage_high_value' => $damage,
+            'armor' => $armor,
+            'strength' => $strength,
+            'magic' => $magic,
+            'vitality' => $vitality,
+            'dexterity' => $dexterity,
+            'health' => $health,
+            'mana' => $mana,
+            'critical' => $critical
         ];
 
         $newHero = $this->heroRepository->create($heroParams);
@@ -300,7 +321,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
             'type_of_item_id' => $typeOfItemArmor[0]->getId(),
             'hero_id' => $newHeroId,
             'item_level' => 1,
-            'is_equiped' => 1
+            'is_equiped' => 1,
+            'critical' => 0
         ];
 
         $createItemArmor = $this->itemsRepository->create($armorParams);
@@ -328,7 +350,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
                     'type_of_item_id' => $typeOfItemSword[0]->getId(),
                     'hero_id' => $newHeroId,
                     'item_level' => 1,
-                    'is_equiped' => 1
+                    'is_equiped' => 1,
+                    'critical' => 0
                 ];
 
                 $createSword = $this->itemsRepository->create($swordParams);
@@ -356,7 +379,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
                     'type_of_item_id' => $typeOfItemBow[0]->getId(),
                     'hero_id' => $newHeroId,
                     'item_level' => 1,
-                    'is_equiped' => 1
+                    'is_equiped' => 1,
+                    'critical' => 0
                 ];
 
                 $createBow = $this->itemsRepository->create($bowParams);
@@ -384,7 +408,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
                     'type_of_item_id' => $typeOfItemStaff[0]->getId(),
                     'hero_id' => $newHeroId,
                     'item_level' => 1,
-                    'is_equiped' => 1
+                    'is_equiped' => 1,
+                    'critical' => 0
                 ];
 
                 $createStaff = $this->itemsRepository->create($staffParams);
@@ -470,7 +495,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
     {
         $heroId = $this->authenticationService->getHeroId();
 
-        $params = [$heroId];
+        $params = [self::ITEM_IS_EQUIPED, $heroId];
         $information = $this->heroRepository->heroInformation($params);
 
         return $information;

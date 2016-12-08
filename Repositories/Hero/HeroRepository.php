@@ -10,6 +10,7 @@ namespace FPopov\Repositories\Hero;
 
 
 use FPopov\Adapter\DatabaseInterface;
+use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Repositories\AbstractRepository;
 use FPopov\Services\Hero\HeroService;
 
@@ -136,42 +137,62 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
     public function heroInformation($params = [])
     {
         $query = "
-            SELECT
-                h.name AS hero_name,
-                h.real_health,
-                h.real_mana,
-                h.experience,
-                c.name AS city_name,
-                l.level_number,
-                l.to_experience AS experience_to_next_level,
-                toh.name AS hero_type,
-                toh.strength,
-                toh.vitality,
-                toh.dexterity,
-                toh.health AS max_health,
-                toh.mana AS max_mana,
-                toh.megic,
-                group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources
-            FROM 
-                resources AS r
-            INNER JOIN 
-                type_of_resources AS tor ON (r.type_of_resources_id = tor.id)
-            INNER JOIN 
-                heroes AS h ON (r.heroes_id = h.id)
-            INNER JOIN 
-                type_of_heroes AS toh ON (h.type_of_heroes_id = toh.id)
-            INNER JOIN 
-                level AS l ON (h.level_id = l.id)
-            INNER JOIN 
-                city AS c ON (h.city_id = c.id)
-            WHERE 
-                h.id = ?
+              SELECT
+                  h.name AS hero_name,
+                  h.real_health + ei.health AS real_health,
+                  h.real_mana + ei.mana AS real_mana,
+                  h.experience,
+                  h.damage_low_value + ei.damage_low_value AS damage_low_value,
+                  h.damage_high_value + ei.damage_high_value AS damage_high_value,
+                  h.armor + ei.armor AS armor,
+                  h.strength,
+                  h.magic,
+                  h.vitality,
+                  h.dexterity,
+                  h.health + ei.health AS max_health,
+                  h.mana + ei.mana AS max_mana,
+                  h.critical + ei.critical AS critical_chance,
+                  c.name AS city_name,
+                  l.level_number,
+                  l.to_experience AS experience_to_next_level,
+                  group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources
+              FROM 
+                  resources AS r
+              INNER JOIN 
+                  type_of_resources AS tor ON (r.type_of_resources_id = tor.id)
+              INNER JOIN 
+                  heroes AS h ON (r.heroes_id = h.id)
+              INNER JOIN 
+                  level AS l ON (h.level_id = l.id)
+              INNER JOIN 
+                  city AS c ON (h.city_id = c.id)
+              INNER JOIN (
+                  SELECT
+                      SUM(ceil(i.damage_low_value + (i.strength/2))) AS damage_low_value,
+                      SUM(ceil(i.damage_high_value + (i.strength/2))) AS damage_high_value,
+                      SUM(i.armor + (i.dexterity * 2)) AS armor,
+                      SUM(i.strength),
+                      SUM(i.vitality),
+                      SUM(i.magic),
+                      SUM(i.dexterity),
+                      SUM(i.health + (i.vitality * 10)) AS health,
+                      SUM(i.mana + (i.magic * 10)) AS mana,
+                      i.hero_id,
+                      SUM(i.critical + (i.dexterity * 0.01)) AS critical
+                  FROM 
+                      items AS i
+                  WHERE 
+                      i.is_equiped = ?
+                  HAVING 
+                      i.hero_id) AS ei ON (ei.hero_id = h.id)
+              WHERE 
+                  h.id = ?;
         ";
 
         $stmt = $this->db->prepare($query);
 
         $stmt->execute($params);
 
-        return $stmt->fetchAll();
+        return $stmt->fetchObject(HeroStatistic::class);
     }
 }

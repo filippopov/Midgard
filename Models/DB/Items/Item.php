@@ -39,6 +39,24 @@ class Item
 
     private $is_equiped;
 
+    private $critical;
+
+    /**
+     * @return mixed
+     */
+    public function getCritical()
+    {
+        return $this->critical;
+    }
+
+    /**
+     * @param mixed $critical
+     */
+    public function setCritical($critical)
+    {
+        $this->critical = $critical;
+    }
+
     /**
      * @return mixed
      */
