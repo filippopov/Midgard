@@ -47,6 +47,24 @@ class HeroStatistic
 
     private $resources;
 
+    private $hero_type;
+
+    /**
+     * @return mixed
+     */
+    public function getHeroType()
+    {
+        return $this->hero_type;
+    }
+
+    /**
+     * @param mixed $hero_type
+     */
+    public function setHeroType($hero_type)
+    {
+        $this->hero_type = $hero_type;
+    }
+
     /**
      * @return mixed
      */

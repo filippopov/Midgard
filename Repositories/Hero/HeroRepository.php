@@ -155,6 +155,7 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   c.name AS city_name,
                   l.level_number,
                   l.to_experience AS experience_to_next_level,
+                  toh.name AS hero_type,
                   group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources
               FROM 
                   resources AS r
@@ -166,6 +167,8 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   level AS l ON (h.level_id = l.id)
               INNER JOIN 
                   city AS c ON (h.city_id = c.id)
+              INNER JOIN 
+                  type_of_heroes AS toh ON (h.type_of_heroes_id = toh.id)  
               INNER JOIN (
                   SELECT
                       SUM(ceil(i.damage_low_value + (i.strength/2))) AS damage_low_value,
@@ -182,7 +185,8 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   FROM 
                       items AS i
                   WHERE 
-                      i.is_equiped = ?
+                      i.is_equiped = ? 
+                      AND i.hero_id = ? 
                   HAVING 
                       i.hero_id) AS ei ON (ei.hero_id = h.id)
               WHERE 

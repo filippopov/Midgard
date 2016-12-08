@@ -249,7 +249,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
         $heroMapper = [
             1 => self::TYPE_OF_HERO_WARRIOR,
             2 => self::TYPE_OF_HERO_MARKSMAN,
-            3 => self::TYPE_OF_HERO_WIZARD
+            4 => self::TYPE_OF_HERO_WIZARD
         ];
 
         /** @var TypeOfHero $getHeroTypeData */
@@ -337,7 +337,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
                 /** @var TypeOfItem[] $typeOfItemSword */
                 $typeOfItemSword = $this->typeOfItemsRepository->findByCondition(['name' => self::TYPE_OF_ITEMS_SWORD], TypeOfItem::class);
 
-                $swordParams = $armorParams = [
+                $swordParams = [
                     'damage_low_value' => 5,
                     'damage_high_value' => 8,
                     'armor' => 0,
@@ -366,7 +366,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
                 /** @var TypeOfItem[] $typeOfItemBow */
                 $typeOfItemBow = $this->typeOfItemsRepository->findByCondition(['name' => self::TYPE_OF_ITEMS_BOW], TypeOfItem::class);
 
-                $bowParams = $armorParams = [
+                $bowParams = [
                     'damage_low_value' => 4,
                     'damage_high_value' => 7,
                     'armor' => 0,
@@ -393,9 +393,9 @@ class HeroService extends AbstractService implements HeroServiceInterface
                 break;
             case self::TYPE_OF_HERO_WIZARD :
                 /** @var TypeOfItem[] $typeOfItemStaff */
-                $typeOfItemStaff = $this->typeOfItemsRepository->findByCondition(['name' => self::TYPE_OF_ITEMS_STAFF]);
+                $typeOfItemStaff = $this->typeOfItemsRepository->findByCondition(['name' => self::TYPE_OF_ITEMS_STAFF], TypeOfItem::class);
 
-                $staffParams = $armorParams = [
+                $staffParams = [
                     'damage_low_value' => 3,
                     'damage_high_value' => 6,
                     'armor' => 0,
@@ -495,7 +495,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
     {
         $heroId = $this->authenticationService->getHeroId();
 
-        $params = [self::ITEM_IS_EQUIPED, $heroId];
+        $params = [self::ITEM_IS_EQUIPED, $heroId, $heroId];
+
         $information = $this->heroRepository->heroInformation($params);
 
         return $information;

@@ -47,7 +47,7 @@ class GameServices extends AbstractService implements GameServicesInterface
 
     public function playHero($params = [])
     {
-        $heroId = isset($params['heroId']) ? $params['heroId'] : 0;
+        $heroId = (int) isset($params['heroId']) ? $params['heroId'] : 0;
 
         if (! $heroId) {
             $this->responseService->redirect('heroes', 'choseHeroToPlay');
