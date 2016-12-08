@@ -99,5 +99,8 @@ $app->registerDependency(\FPopov\Repositories\Resources\ResourcesRepositoryInter
 $app->registerDependency(\FPopov\Services\Game\GameServicesInterface::class, \FPopov\Services\Game\GameServices::class);
 $app->registerDependency(\FPopov\Repositories\TypeOfItems\TypeOfItemsRepositoryInterface::class, \FPopov\Repositories\TypeOfItems\TypeOfItemsRepository::class);
 $app->registerDependency(\FPopov\Repositories\Items\ItemsRepositoryInterface::class, \FPopov\Repositories\Items\ItemsRepository::class);
+$app->registerDependency(\FPopov\Services\Battle\BattleServiceInterface::class, \FPopov\Services\Battle\BattleService::class);
+$app->registerDependency(\FPopov\Repositories\TypeMonsters\TypeMonstersRepositoryInterface::class, \FPopov\Repositories\TypeMonsters\TypeMonstersRepository::class);
+$app->registerDependency(\FPopov\Repositories\Monsters\MonstersRepositoryInterface::class, \FPopov\Repositories\Monsters\MonstersRepository::class);
 
 $app->start();

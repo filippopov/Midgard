@@ -182,6 +182,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
         ];
 
         $repoData = $this->heroRepository->findAllHeroesForCurrentUser($bindFilter);
+
         $bindFilter['total'] = $this->heroRepository->findAllHeroesForCurrentUserCount($bindFilter);
         $data = $this->generateGridData($structure, $repoData);
 
