@@ -74,6 +74,10 @@ class BattleController
         /** @var HeroStatistic $heroInfo */
         $heroInfo = isset($battleData['heroInformation']) ? $battleData['heroInformation'] : [];
 
+        $monsterAndHeroInBattle = isset($battleData['monsterAndHeroInBattle']) ? $battleData['monsterAndHeroInBattle'] : false;
+        $monsterRealHealth = isset($battleData['monsterRealHealth']) ? $battleData['monsterRealHealth'] : 0;
+
+
         $monsterType = $monsterInfo->getMonsterType();
         $monsterDamageLowValue = $monsterInfo->getDamageLowValue();
         $monsterDamageHighValue = $monsterInfo->getDamageHighValue();
@@ -107,7 +111,9 @@ class BattleController
             $heroMaxMana,
             $heroCriticalChance,
             $heroLevelNumber,
-            $heroType
+            $heroType,
+            $monsterAndHeroInBattle,
+            $monsterRealHealth
         );
 
         $params = ['model' => $battleHeroMonsterViewModel];

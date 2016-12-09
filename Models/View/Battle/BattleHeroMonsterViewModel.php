@@ -43,6 +43,10 @@ class BattleHeroMonsterViewModel
 
     private $heroType;
 
+    private $monsterAndHeroInBattle;
+
+    private $monsterRealHealth;
+
     /**
      * BattleHeroMonsterViewModel constructor.
      * @param $monsterType
@@ -61,8 +65,13 @@ class BattleHeroMonsterViewModel
      * @param $heroCriticalChance
      * @param $heroLevelNumber
      * @param $heroType
+     * @param $monsterAndHeroInBattle
+     * @param $monsterRealHealth
      */
-    public function __construct($monsterType, $monsterDamageLowValue, $monsterDamageHighValue, $monsterArmor, $monsterHealth, $heroName, $heroRealHealth, $heroRealMana, $heroDamageLowValue, $heroDamageHighValue, $heroArmor, $heroMaxHealth, $heroMaxMana, $heroCriticalChance, $heroLevelNumber, $heroType)
+    public function __construct($monsterType, $monsterDamageLowValue, $monsterDamageHighValue, $monsterArmor,
+                                $monsterHealth, $heroName, $heroRealHealth, $heroRealMana, $heroDamageLowValue,
+                                $heroDamageHighValue, $heroArmor, $heroMaxHealth, $heroMaxMana,
+                                $heroCriticalChance, $heroLevelNumber, $heroType, $monsterAndHeroInBattle, $monsterRealHealth)
     {
         $this->monsterType = $monsterType;
         $this->monsterDamageLowValue = $monsterDamageLowValue;
@@ -80,7 +89,43 @@ class BattleHeroMonsterViewModel
         $this->heroCriticalChance = $heroCriticalChance;
         $this->heroLevelNumber = $heroLevelNumber;
         $this->heroType = $heroType;
+        $this->monsterAndHeroInBattle = $monsterAndHeroInBattle;
+        $this->monsterRealHealth = $monsterRealHealth;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getMonsterAndHeroInBattle()
+    {
+        return $this->monsterAndHeroInBattle;
+    }
+
+    /**
+     * @param mixed $monsterAndHeroInBattle
+     */
+    public function setMonsterAndHeroInBattle($monsterAndHeroInBattle)
+    {
+        $this->monsterAndHeroInBattle = $monsterAndHeroInBattle;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMonsterRealHealth()
+    {
+        return $this->monsterRealHealth;
+    }
+
+    /**
+     * @param mixed $monsterRealHealth
+     */
+    public function setMonsterRealHealth($monsterRealHealth)
+    {
+        $this->monsterRealHealth = $monsterRealHealth;
+    }
+
+
 
     /**
      * @return mixed

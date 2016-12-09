@@ -13,6 +13,7 @@ use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\SessionInterface;
 use FPopov\Core\ViewInterface;
 use FPopov\Exceptions\GameException;
+use FPopov\Models\DB\Battle\Battle;
 use FPopov\Models\DB\Hero\Hero;
 use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Models\DB\Monsters\Monsters;
@@ -32,7 +33,9 @@ use FPopov\Services\Hero\HeroService;
 class BattleService extends AbstractService implements BattleServiceInterface
 {
 
+
     const HERO_STATUS_IN_BATTLE = 2;
+    const DEAD_BATTLE_STATUS = 0;
 
     private $view;
     private $authenticationService;
@@ -164,11 +167,29 @@ class BattleService extends AbstractService implements BattleServiceInterface
         /** @var HeroStatistic $heroInformation */
         $heroInformation = $this->heroRepository->heroInformation($heroParams);
 
+        $monsterAndHeroInBattle = false;
+        $monsterRealHealth = 0;
+        if ($heroInformation->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
+            /** @var Battle[] $isInBattle */
+            $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_monster_id' => $monsterId], Battle::class);
+
+            if (! empty($isInBattle)) {
+                $counter = count($isInBattle) - 1;
+
+                if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
+                    $monsterAndHeroInBattle = true;
+                    $monsterRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                }
+            }
+        }
+
         $monsterInformation = $this->monstersRepository->monsterInformation([$monsterId]);
 
         return [
             'heroInformation' => $heroInformation,
-            'monsterInformation' => $monsterInformation
+            'monsterInformation' => $monsterInformation,
+            'monsterAndHeroInBattle' => $monsterAndHeroInBattle,
+            'monsterRealHealth' => $monsterRealHealth
         ];
     }
 
@@ -198,6 +219,22 @@ class BattleService extends AbstractService implements BattleServiceInterface
         /** @var HeroStatistic $attacker */
         $attacker = $this->heroRepository->heroInformation($heroParams);
 
+        $monsterAndHeroInBattle = false;
+        $monsterRealHealth = 0;
+        if ($attacker->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
+            /** @var Battle[] $isInBattle */
+            $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+
+            if (! empty($isInBattle)) {
+                $counter = count($isInBattle) - 1;
+
+                if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
+                    $monsterAndHeroInBattle = true;
+                    $monsterRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                }
+            }
+        }
+
         /** @var Monsters $monster */
         $monster = $this->monstersRepository->monsterInformation([$defenderId]);
 
@@ -211,18 +248,19 @@ class BattleService extends AbstractService implements BattleServiceInterface
             'defender' => [
                 'damageLowValue' => $monster->getDamageLowValue(),
                 'damageHighValue' => $monster->getDamageHighValue(),
-                'health' => $monster->getHealth(),
+                'health' => $monsterAndHeroInBattle ? $monsterRealHealth : $monster->getHealth(),
                 'armor' => $monster->getArmor()
             ]
         ];
 
         $resultAttack = $this->makeAttack($makeAttack);
-
         $attackerHit = isset($resultAttack['attackerHit']) ? $resultAttack['attackerHit'] : 0;
         $defenderHealthAfterAttack = isset($resultAttack['defenderHealthAfterAttack']) ? $resultAttack['defenderHealthAfterAttack'] : 0;
         $defenderHit = isset($resultAttack['defenderHit']) ? $resultAttack['defenderHit'] : 0;
         $attackerHealthAfterAttack = isset($resultAttack['attackerHealthAfterAttack']) ? $resultAttack['attackerHealthAfterAttack'] : 0;
         $deadStatus = isset($resultAttack['deadStatus']) ? $resultAttack['deadStatus'] : 0;
+
+        $attackerHealthAfterAttack = $attackerHealthAfterAttack - $attacker->getHealthFromItems();
 
         $createBattleParams = [
             'attacker_id' => $attackerId,
@@ -234,6 +272,17 @@ class BattleService extends AbstractService implements BattleServiceInterface
             'attacker_health_after_attack' => $attackerHealthAfterAttack,
             'dead_status' => $deadStatus
         ];
+
+        /** @var Battle[] $deleteBattleRows */
+        $deleteBattleRows = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+
+        foreach ($deleteBattleRows as $deleteBattleRow) {
+            $deleteBattle = $this->battleRepository->delete($deleteBattleRow->getId());
+
+            if (! $deleteBattle) {
+                throw new GameException('Can not delete row for battle');
+            }
+        }
 
         $createBattleRow = $this->battleRepository->create($createBattleParams);
 
@@ -250,7 +299,6 @@ class BattleService extends AbstractService implements BattleServiceInterface
         Message::postMessage("Attacker hit with $attackerHit damage, defender hit with $defenderHit damage", Message::POSITIVE_MESSAGE);
 
         return $deadStatus;
-
     }
 
 
@@ -274,13 +322,14 @@ class BattleService extends AbstractService implements BattleServiceInterface
         $attackerHit = (int) isset($attackResult['hitDamage']) ? $attackResult['hitDamage'] : 0;
         $defenderHealthAfterAttack = (int) isset($attackResult['defenderHealth']) ? $attackResult['defenderHealth'] : 0;
 
-
         if ($defenderHealthAfterAttack > 0) {
             $attackResultDefender = $this->hit($defenderDamageLow, $defenderDamageHigh, $attackerArmor, $attackerHealth);
         } else {
             return [
                 'attackerHit' => $attackerHit,
                 'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
+                'defenderHit' => 0,
+                'attackerHealthAfterAttack' => $attackerHealth,
                 'deadStatus' => 2
             ];
         }
@@ -309,20 +358,19 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
     private function hit($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth)
     {
-        var_dump($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth);
         $attackerDamage = rand($attackerDamageLow, $attackerDamageHigh);
 
-        $block = ceil($defenderArmor * 0.2);
+        $block = (int) ceil($defenderArmor * 0.2);
 
-        $hitDamage = $attackerDamage - $block;
+        $hitDamage = (int) $attackerDamage - $block;
 
         $hitDamage = $hitDamage > 0 ? $hitDamage : 0;
 
-        $defenderHealth = $defenderHealth - $hitDamage;
-        var_dump($defenderHealth, $hitDamage);
+        $defenderHealth = (int) $defenderHealth - (int) $hitDamage;
+
         return [
-            'hitDamage' => $hitDamage,
-            'defenderHealth' => $defenderHealth
+            'hitDamage' => (int) $hitDamage,
+            'defenderHealth' => (int) $defenderHealth
         ];
     }
 }

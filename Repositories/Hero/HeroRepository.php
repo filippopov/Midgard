@@ -149,6 +149,14 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   END  AS real_health,
                   CASE 
                       WHEN 
+                          ei.health IS NULL OR ei.health = '' 
+                      THEN 
+                          0 
+                      ELSE 
+                        ei.health
+                  END  AS health_from_items, 
+                  CASE 
+                      WHEN 
                           ei.mana IS NULL OR ei.mana = '' 
                       THEN 
                           h.real_mana 
@@ -212,7 +220,8 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   l.level_number,
                   l.to_experience AS experience_to_next_level,
                   toh.name AS hero_type,
-                  group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources
+                  group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources,
+                  h.hero_status
               FROM 
                   resources AS r
               INNER JOIN 

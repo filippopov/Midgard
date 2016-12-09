@@ -12,7 +12,11 @@ $monsterId = isset($monsterId) ? $monsterId : 0;
         <div><strong>Monster type: </strong><?php echo $model->getMonsterType()?></div>
         <div><strong>Monster damage: </strong><?php echo $model->getMonsterDamageLowValue() . ' - ' . $model->getMonsterDamageHighValue()?></div>
         <div><strong>Monster armor: </strong><?php echo $model->getMonsterArmor()?></div>
-        <div><strong>Monster health: </strong><?php echo $model->getMonsterHealth()?></div>
+        <?php if ($model->getMonsterAndHeroInBattle()) : ?>
+            <div><strong>Monster health: </strong><?php echo $model->getMonsterRealHealth()?></div>
+        <?php else: ?>
+            <div><strong>Monster health: </strong><?php echo $model->getMonsterHealth()?></div>
+        <?php endif; ?>
         <h2>Player</h2>
         <div><strong>Hero type: </strong><?php echo $model->getHeroType()?></div>
         <div><strong>Hero name: </strong><?php echo $model->getHeroName()?></div>

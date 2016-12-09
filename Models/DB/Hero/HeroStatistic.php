@@ -49,6 +49,42 @@ class HeroStatistic
 
     private $hero_type;
 
+    private $health_from_items;
+
+    private $hero_status;
+
+    /**
+     * @return mixed
+     */
+    public function getHeroStatus()
+    {
+        return $this->hero_status;
+    }
+
+    /**
+     * @param mixed $hero_status
+     */
+    public function setHeroStatus($hero_status)
+    {
+        $this->hero_status = $hero_status;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHealthFromItems()
+    {
+        return $this->health_from_items;
+    }
+
+    /**
+     * @param mixed $health_from_items
+     */
+    public function setHealthFromItems($health_from_items)
+    {
+        $this->health_from_items = $health_from_items;
+    }
+
     /**
      * @return mixed
      */
