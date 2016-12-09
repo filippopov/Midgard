@@ -10,6 +10,7 @@ namespace FPopov\Repositories\Monsters;
 
 
 use FPopov\Adapter\DatabaseInterface;
+use FPopov\Models\DB\Monsters\Monsters;
 use FPopov\Repositories\AbstractRepository;
 
 class MonstersRepository extends AbstractRepository implements MonstersRepositoryInterface
@@ -30,7 +31,7 @@ class MonstersRepository extends AbstractRepository implements MonstersRepositor
         ];
     }
 
-    public function findAllMonstersForCurentCity($bindFilter = [])
+    public function findAllMonstersForCurentCity($params = [])
     {
         $listOfFields = [
             'm.id',
@@ -71,7 +72,7 @@ class MonstersRepository extends AbstractRepository implements MonstersRepositor
             INNER JOIN 
                 city AS c ON (m.city_id = c.id)
             WHERE 
-                m.city_id = ?   
+                m.city_id = :cityId   
         ";
 
         $query .= $where . $order . $limit;
@@ -90,5 +91,29 @@ class MonstersRepository extends AbstractRepository implements MonstersRepositor
         $result = $this->findAllMonstersForCurentCity($params);
 
         return isset($result[0]) ? $result[0]['count'] : 0;
+    }
+
+    public function monsterInformation($params = [])
+    {
+        $query = "
+            SELECT
+                tm.name AS monster_type,
+                m.damage_high_value,
+                m.damage_low_value,
+                m.armor,
+                m.health
+            FROM
+                monsters AS m
+            INNER JOIN 
+                type_monsters AS tm ON (m.type_monsters_id = tm.id)
+            WHERE 
+                m.id = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        $stmt->execute($params);
+
+        return $stmt->fetchObject(Monsters::class);
     }
 }

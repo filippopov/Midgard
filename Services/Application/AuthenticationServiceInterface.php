@@ -22,4 +22,8 @@ interface AuthenticationServiceInterface
     public function isAuthenticatedHero() : bool;
 
     public function getHeroId();
+
+    public function isAuthenticatedMonster() : bool;
+
+    public function getMonsterId();
 }

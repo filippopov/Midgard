@@ -10,6 +10,8 @@ namespace FPopov\Core;
 
 
 use FPopov\Core\MVC\MVCContext;
+use FPopov\Services\Application\AuthenticationService;
+use FPopov\Services\Application\AuthenticationServiceInterface;
 
 class View implements ViewInterface
 {
@@ -22,9 +24,13 @@ class View implements ViewInterface
 
     private $mvcContext;
 
-    public function __construct(MVCContext $MVCContext)
+    /** @var AuthenticationService */
+    private $authenticationService;
+
+    public function __construct(MVCContext $MVCContext, AuthenticationServiceInterface $authenticationService)
     {
         $this->mvcContext = $MVCContext;
+        $this->authenticationService = $authenticationService;
     }
 
     public function render($params = array())
@@ -40,6 +46,17 @@ class View implements ViewInterface
         $action = $this->mvcContext->getAction();
         $uriJunk = $this->mvcContext->getUriJunk();
         $getParams = $this->mvcContext->getGetParams();
+
+        $heroId = 0;
+        $monsterId = 0;
+
+        if ($this->authenticationService->isAuthenticatedHero()) {
+            $heroId = $this->authenticationService->getHeroId();
+        }
+
+        if ($this->authenticationService->isAuthenticatedMonster()) {
+            $monsterId = $this->authenticationService->getMonsterId();
+        }
 
         if ($isToEscape) {
             $model = $this->escapeAll($model);

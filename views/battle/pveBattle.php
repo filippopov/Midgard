@@ -2,6 +2,8 @@
 /**
  * @var \FPopov\Core\ViewInterface $this
  */
+
+    $heroId = isset($heroId) ? $heroId : 0;
 ?>
 
 
@@ -12,3 +14,7 @@
     </div>
 
 <?php require 'views/partials/grid/pagination.php' ?>
+
+
+
+<a href="<?php echo $this->uri('game', 'playHero', [$heroId]) ?>" class="btn btn-default">Back</a>

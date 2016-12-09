@@ -21,3 +21,5 @@ $getParams = isset($getParams) ? $getParams : '';
 
 <?php require 'views/partials/grid/modalForm.php' ?>
 <?php require 'views/partials/grid/pagination.php' ?>
+
+

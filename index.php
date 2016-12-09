@@ -102,5 +102,6 @@ $app->registerDependency(\FPopov\Repositories\Items\ItemsRepositoryInterface::cl
 $app->registerDependency(\FPopov\Services\Battle\BattleServiceInterface::class, \FPopov\Services\Battle\BattleService::class);
 $app->registerDependency(\FPopov\Repositories\TypeMonsters\TypeMonstersRepositoryInterface::class, \FPopov\Repositories\TypeMonsters\TypeMonstersRepository::class);
 $app->registerDependency(\FPopov\Repositories\Monsters\MonstersRepositoryInterface::class, \FPopov\Repositories\Monsters\MonstersRepository::class);
+$app->registerDependency(\FPopov\Repositories\Battle\BattleRepositoryInterface::class, \FPopov\Repositories\Battle\BattleRepository::class);
 
 $app->start();

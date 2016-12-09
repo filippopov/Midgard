@@ -21,6 +21,7 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
 {
     const AUTHENTICATION_ID = 'id';
     const AUTHENTICATION_HERO_ID = 'heroId';
+    const AUTHENTICATION_MONSTER_ID = 'monsterId';
 
     private $db;
     private $session;
@@ -45,6 +46,11 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
     public function isAuthenticatedHero() : bool
     {
         return $this->session->exists(self::AUTHENTICATION_HERO_ID);
+    }
+
+    public function isAuthenticatedMonster() : bool
+    {
+        return $this->session->exists(self::AUTHENTICATION_MONSTER_ID);
     }
 
     public function logout()
@@ -84,5 +90,10 @@ class AuthenticationService extends AbstractService implements AuthenticationSer
     public function getHeroId()
     {
         return $this->session->get(self::AUTHENTICATION_HERO_ID);
+    }
+
+    public function getMonsterId()
+    {
+        return $this->session->get(self::AUTHENTICATION_MONSTER_ID);
     }
 }

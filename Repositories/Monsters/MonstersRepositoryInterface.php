@@ -11,7 +11,9 @@ namespace FPopov\Repositories\Monsters;
 
 interface MonstersRepositoryInterface
 {
-    public function findAllMonstersForCurentCity($bindFilter = []);
+    public function findAllMonstersForCurentCity($params = []);
 
     public function findAllMonstersForCurentCityCount($params = []);
+
+    public function monsterInformation($params = []);
 }
