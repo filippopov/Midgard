@@ -14,6 +14,7 @@ use FPopov\Core\ViewInterface;
 use FPopov\Exceptions\GameException;
 use FPopov\Models\DB\Hero\Hero;
 use FPopov\Models\DB\Hero\HeroStatistic;
+use FPopov\Models\DB\Monsters\Monsters;
 use FPopov\Models\DB\TypeMonsters\TypeMonster;
 use FPopov\Repositories\Battle\BattleRepository;
 use FPopov\Repositories\Battle\BattleRepositoryInterface;
@@ -188,6 +189,104 @@ class BattleService extends AbstractService implements BattleServiceInterface
             throw new GameException('Not set defenderId');
         }
 
+        $heroParams = [
+            HeroService::ITEM_IS_EQUIPED, $attackerId, $attackerId
+        ];
 
+
+        /** @var HeroStatistic $attacker */
+        $attacker = $this->heroRepository->heroInformation($heroParams);
+
+        /** @var Monsters $monster */
+        $monster = $this->monstersRepository->monsterInformation([$defenderId]);
+
+        $makeAttack = [
+            'attacker' => [
+                'damageLowValue' => $attacker->getDamageLowValue(),
+                'damageHighValue' => $attacker->getDamageHighValue(),
+                'health' => $attacker->getRealHealth(),
+                'armor' => $attacker->getArmor()
+            ],
+            'defender' => [
+                'damageLowValue' => $monster->getDamageLowValue(),
+                'damageHighValue' => $monster->getDamageHighValue(),
+                'health' => $monster->getHealth(),
+                'armor' => $monster->getArmor()
+            ]
+        ];
+
+        $result = $this->makeAttack($makeAttack);
+    }
+
+
+    private function makeAttack($params = [])
+    {
+        $attacker = isset($params['attacker']) ? $params['attacker'] : [];
+        $defender = isset($params['defender']) ? $params['defender'] : [];
+
+        $attackerDamageLow = isset($attacker['damageLowValue']) ? $attacker['damageLowValue'] : 0;
+        $attackerDamageHigh = isset($attacker['damageHighValue']) ? $attacker['damageHighValue'] : 0;
+        $attackerHealth = isset($attacker['health']) ? $attacker['health'] : 0;
+        $attackerArmor = isset($attacker['armor']) ? $attacker['armor'] : 0;
+
+        $defenderDamageLow = isset($defender['damageLowValue']) ? $defender['damageLowValue'] : 0;
+        $defenderDamageHigh = isset($defender['damageHighValue']) ? $defender['damageHighValue'] : 0;
+        $defenderHealth = isset($defender['health']) ? $defender['health'] : 0;
+        $defenderArmor = isset($defender['armor']) ? $defender['armor'] : 0;
+
+        $attackResult = $this->hit($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth);
+
+        $attackerHit = (int) isset($attackResult['hitDamage']) ? $attackResult['hitDamage'] : 0;
+        $defenderHealthAfterAttack = (int) isset($attackResult['defenderHealth']) ? $attackResult['defenderHealth'] : 0;
+
+
+        if ($defenderHealthAfterAttack > 0) {
+            $attackResultDefender = $this->hit($defenderDamageLow, $defenderDamageHigh, $attackerArmor, $attackerHealth);
+        } else {
+            return [
+                'attackerHit' => $attackerHit,
+                'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
+                'dead' => 'defender'
+            ];
+        }
+
+        $defenderHit = (int) isset($attackResultDefender['hitDamage']) ? $attackResultDefender['hitDamage'] : 0;
+        $attackerHealthAfterAttack = (int) isset($attackResultDefender['defenderHealth']) ? $attackResultDefender['defenderHealth'] : 0;
+
+        if ($attackerHealthAfterAttack > 0) {
+            return [
+                'attackerHit' => $attackerHit,
+                'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
+                'defenderHit' => $defenderHit,
+                'attackerHealthAfterAttack' => $$attackerHealthAfterAttack,
+                'dead' => ''
+            ];
+        } else {
+            return [
+                'attackerHit' => $attackerHit,
+                'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
+                'defenderHit' => $defenderHit,
+                'attackerHealthAfterAttack' => $$attackerHealthAfterAttack,
+                'dead' => 'attacker'
+            ];
+        }
+    }
+
+    private function hit($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth)
+    {
+        $attackerDamage = rand($attackerDamageLow, $attackerDamageHigh);
+
+        $block = ceil($defenderArmor * 0.2);
+
+        $hitDamage = $attackerDamage - $block;
+
+        if ($hitDamage > 0) {
+            $defenderHealth -= $hitDamage;
+        }
+
+        return [
+            'hitDamage' => $hitDamage,
+            'defenderHealth' => $defenderHealth
+        ];
     }
 }
