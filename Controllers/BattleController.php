@@ -149,10 +149,7 @@ class BattleController
         $attackData = $this->battleService->attack($attackParams);
 
 
-
-
-
-
+        $this->responseService->redirect('battle', 'attackMonster', [$defenderId, $attackData]);
     }
 
 

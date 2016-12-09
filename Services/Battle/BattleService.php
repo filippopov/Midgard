@@ -9,6 +9,7 @@
 namespace FPopov\Services\Battle;
 
 
+use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\SessionInterface;
 use FPopov\Core\ViewInterface;
 use FPopov\Exceptions\GameException;
@@ -215,7 +216,41 @@ class BattleService extends AbstractService implements BattleServiceInterface
             ]
         ];
 
-        $result = $this->makeAttack($makeAttack);
+        $resultAttack = $this->makeAttack($makeAttack);
+
+        $attackerHit = isset($resultAttack['attackerHit']) ? $resultAttack['attackerHit'] : 0;
+        $defenderHealthAfterAttack = isset($resultAttack['defenderHealthAfterAttack']) ? $resultAttack['defenderHealthAfterAttack'] : 0;
+        $defenderHit = isset($resultAttack['defenderHit']) ? $resultAttack['defenderHit'] : 0;
+        $attackerHealthAfterAttack = isset($resultAttack['attackerHealthAfterAttack']) ? $resultAttack['attackerHealthAfterAttack'] : 0;
+        $deadStatus = isset($resultAttack['deadStatus']) ? $resultAttack['deadStatus'] : 0;
+
+        $createBattleParams = [
+            'attacker_id' => $attackerId,
+            'defender_monster_id' => $defenderId,
+            'attacker_hit' => $attackerHit,
+            'defender_hit' => $defenderHit,
+            'defender_hero_id' => 0,
+            'defender_health_after_attack' => $defenderHealthAfterAttack,
+            'attacker_health_after_attack' => $attackerHealthAfterAttack,
+            'dead_status' => $deadStatus
+        ];
+
+        $createBattleRow = $this->battleRepository->create($createBattleParams);
+
+        if (! $createBattleRow) {
+            throw new GameException('Can not create battle row');
+        }
+
+        $updateHeroHealth = $this->heroRepository->update($attackerId, ['real_health' => $attackerHealthAfterAttack]);
+
+        if (! $updateHeroHealth) {
+            throw new GameException('Can not update hero real health');
+        }
+
+        Message::postMessage("Attacker hit with $attackerHit damage, defender hit with $defenderHit damage", Message::POSITIVE_MESSAGE);
+
+        return $deadStatus;
+
     }
 
 
@@ -246,7 +281,7 @@ class BattleService extends AbstractService implements BattleServiceInterface
             return [
                 'attackerHit' => $attackerHit,
                 'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
-                'dead' => 'defender'
+                'deadStatus' => 2
             ];
         }
 
@@ -258,32 +293,33 @@ class BattleService extends AbstractService implements BattleServiceInterface
                 'attackerHit' => $attackerHit,
                 'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
                 'defenderHit' => $defenderHit,
-                'attackerHealthAfterAttack' => $$attackerHealthAfterAttack,
-                'dead' => ''
+                'attackerHealthAfterAttack' => $attackerHealthAfterAttack,
+                'deadStatus' => 0
             ];
         } else {
             return [
                 'attackerHit' => $attackerHit,
                 'defenderHealthAfterAttack' => $defenderHealthAfterAttack,
                 'defenderHit' => $defenderHit,
-                'attackerHealthAfterAttack' => $$attackerHealthAfterAttack,
-                'dead' => 'attacker'
+                'attackerHealthAfterAttack' => $attackerHealthAfterAttack,
+                'deadStatus' => 1
             ];
         }
     }
 
     private function hit($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth)
     {
+        var_dump($attackerDamageLow, $attackerDamageHigh, $defenderArmor, $defenderHealth);
         $attackerDamage = rand($attackerDamageLow, $attackerDamageHigh);
 
         $block = ceil($defenderArmor * 0.2);
 
         $hitDamage = $attackerDamage - $block;
 
-        if ($hitDamage > 0) {
-            $defenderHealth -= $hitDamage;
-        }
+        $hitDamage = $hitDamage > 0 ? $hitDamage : 0;
 
+        $defenderHealth = $defenderHealth - $hitDamage;
+        var_dump($defenderHealth, $hitDamage);
         return [
             'hitDamage' => $hitDamage,
             'defenderHealth' => $defenderHealth
