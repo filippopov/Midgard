@@ -11,5 +11,5 @@ namespace FPopov\Repositories\Level;
 
 interface LevelRepositoryInterface
 {
-
+    public function getLevelByExperience($params = []);
 }

@@ -204,7 +204,9 @@ class BattleController
             'defenderId' => $defenderId
         ];
 
-        dd($runParams);
+        $run = $this->battleService->runFromBattle($runParams);
+
+        $this->responseService->redirect('game', 'playHero', [$attackerId]);
     }
 
     public function attackerWinMonster()

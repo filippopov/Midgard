@@ -49,6 +49,7 @@ use FPopov\Services\Hero\HeroService;
 class BattleService extends AbstractService implements BattleServiceInterface
 {
     const HERO_STATUS_IN_BATTLE = 2;
+    const HERO_STATUS_OUT_OF_BATTLE = 1;
     const DEAD_BATTLE_STATUS = 0;
 
     const WEAPON = 1;
@@ -230,6 +231,34 @@ class BattleService extends AbstractService implements BattleServiceInterface
             'monsterAndHeroInBattle' => $monsterAndHeroInBattle,
             'monsterRealHealth' => $monsterRealHealth
         ];
+    }
+
+    public function runFromBattle($runParams = [])
+    {
+        $typeOfBattle = isset($runParams['typeOfBattle']) ? $runParams['typeOfBattle'] : '';
+        $attackerId = isset($runParams['attackerId']) ? $runParams['attackerId'] : 0;
+        $defenderId = isset($runParams['defenderId']) ? $runParams['defenderId'] : 0;
+
+        /** @var Battle[] $allBattles */
+        $allBattles = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+
+        if (! empty($allBattles)) {
+            foreach ($allBattles as $battle) {
+                $deleteBattle = $this->battleRepository->delete($battle->getId());
+
+                if (! $deleteBattle) {
+                    throw new GameException('Can not delete battle row');
+                }
+            }
+        }
+
+        $updateHeroStatus = $this->heroRepository->update($attackerId, ['hero_status' => self::HERO_STATUS_OUT_OF_BATTLE]);
+
+        if (! $updateHeroStatus) {
+            throw new GameException('Can not update hero status');
+        }
+
+        return true;
     }
 
     public function attack($attackParams = [])
@@ -463,15 +492,13 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $experienceAfterBattle = $hero->getExperience() + $monsterInformation->getWinExperience();
 
-        /** @var Level[] $levels */
-        $levels = $this->levelRepository->findAll(Level::class);
+        $level = $this->levelRepository->getLevelByExperience([$experienceAfterBattle, $experienceAfterBattle]);
 
-        $currentLevel = $hero->getLevelId();
-        foreach ($levels as $level) {
-            if ($level->getFromExperience() < $experienceAfterBattle && $level->getToExperience() > $experienceAfterBattle) {
-                $currentLevel = $level->getLevelNumber();
-            }
+        if (empty($level)) {
+            throw new GameException('Not such level');
         }
+
+        $currentLevel = $level['id'];
 
         $heroUpdate = $this->heroRepository->update($heroId, ['level_id' => $currentLevel, 'experience' => $experienceAfterBattle]);
 
@@ -554,15 +581,13 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $experienceAfterBattle = $hero->getExperience() - $experienceTakeTen;
 
-        /** @var Level[] $levels */
-        $levels = $this->levelRepository->findAll(Level::class);
+        $level = $this->levelRepository->getLevelByExperience([$experienceAfterBattle, $experienceAfterBattle]);
 
-        $currentLevel = $hero->getLevelId();
-        foreach ($levels as $level) {
-            if ($level->getFromExperience() < $experienceAfterBattle && $level->getToExperience() > $experienceAfterBattle) {
-                $currentLevel = $level->getLevelNumber();
-            }
+        if (empty($level)) {
+            throw new GameException('Not such level');
         }
+
+        $currentLevel = $level['id'];
 
         $newHeroData = [
             'hero_status' => 1,
@@ -647,7 +672,5 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         return $itemName;
     }
-
-
 }
 
