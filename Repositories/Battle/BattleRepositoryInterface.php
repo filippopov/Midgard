@@ -11,5 +11,7 @@ namespace FPopov\Repositories\Battle;
 
 interface BattleRepositoryInterface
 {
+    public function findAllHeroesForCurrentCity($params = []);
 
+    public function findAllHeroesForCurrentCityCount($params = []);
 }

@@ -118,6 +118,64 @@ class BattleService extends AbstractService implements BattleServiceInterface
         $this->responseService = $responseService;
     }
 
+
+    public function pvpBattle($params = [])
+    {
+        $heroId = $this->authenticationService->getHeroId();
+        $userId = $this->authenticationService->getUserId();
+
+        /** @var Hero $hero */
+        $hero = $this->heroRepository->findOneRowById($heroId, Hero::class);
+
+        $params['userId'] = $userId;
+        $params['cityId'] = $hero->getCityId();
+        $params['honor'] = HeroService::RESOURCES_HONOR;
+        $allowParams = ['cityId', 'userId', 'honor'];
+        $bindFilter = $this->getParamFilters($params, $allowParams);
+
+        $structure = [
+            'name' => [
+                'title' => 'Hero Name',
+                'type' => self::TYPE_DATA
+            ],
+            'level_number' => [
+                'title' => 'Level',
+                'type' => self::TYPE_DATA
+            ],
+            'honor' => [
+                'title' => 'Win Honor',
+                'type' => self::TYPE_DATA
+            ],
+            'id' => [
+                'title' => 'Attack',
+                'type' => self::TYPE_DATA,
+                'value' => function ($value) {
+                    return 'Attack';
+                },
+                'onClick' => function ($row) {
+                    return $this->view->uri('battle', 'attackHero', ['heroId' => $row['id']]);
+                }
+            ]
+        ];
+
+
+        $repoData = $this->battleRepository->findAllHeroesForCurrentCity($bindFilter);
+        $bindFilter['total'] = $this->battleRepository->findAllHeroesForCurrentCityCount($bindFilter);
+        $data = $this->generateGridData($structure, $repoData);
+
+        $searchFields = [
+            'name' => 'Hero Name'
+        ];
+
+        $table = [
+            'tableSearchFields' => $searchFields,
+            'tableData' => $data,
+            'filter' => $this->pageFilters($bindFilter),
+        ];
+
+        return $table;
+    }
+
     public function pveBattle($params = [])
     {
         $heroId = $this->authenticationService->getHeroId();
@@ -672,5 +730,6 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         return $itemName;
     }
+
 }
 

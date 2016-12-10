@@ -62,6 +62,23 @@ class BattleController
         $this->view->render($params);
     }
 
+    public function pvpBattle()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $getParams = $this->MVCContext->getGetParams();
+        $allHeroes = $this->battleService->pvpBattle($getParams);
+
+        $params = ['model' => $allHeroes];
+        $this->view->render($params);
+    }
+
     public function attackMonster($monsterId)
     {
         if (! $this->authenticationService->isAuthenticated()) {
