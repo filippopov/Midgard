@@ -49,7 +49,7 @@ $searchFilter = isset($filter['filter'], $filter['filter']['search']) ? $filter[
             </div>
         <?php endif; ?>
         <?php endforeach; ?>
-        <button id="submitButton"  class="btn btn-primary">Submit</button>
+        <button id="submitButton"  class="btn btn-primary">Search</button>
     </form>
 </div>
 <?php endif; ?>

@@ -16,4 +16,6 @@ interface BattleServiceInterface
     public function attackMonster($monsterId);
 
     public function attack($attackParams = []);
+
+    public function attackerWinMonster($defenderId);
 }

@@ -16,30 +16,48 @@ use FPopov\Exceptions\GameException;
 use FPopov\Models\DB\Battle\Battle;
 use FPopov\Models\DB\Hero\Hero;
 use FPopov\Models\DB\Hero\HeroStatistic;
+use FPopov\Models\DB\Items\Item;
+use FPopov\Models\DB\Level\Level;
 use FPopov\Models\DB\Monsters\Monsters;
+use FPopov\Models\DB\Resources\Resources;
 use FPopov\Models\DB\TypeMonsters\TypeMonster;
+use FPopov\Models\DB\TypeOfItems\TypeOfItem;
+use FPopov\Models\DB\TypeOfResources\TypeOfResources;
 use FPopov\Repositories\Battle\BattleRepository;
 use FPopov\Repositories\Battle\BattleRepositoryInterface;
 use FPopov\Repositories\Hero\HeroRepository;
 use FPopov\Repositories\Hero\HeroRepositoryInterface;
+use FPopov\Repositories\Items\ItemsRepository;
+use FPopov\Repositories\Items\ItemsRepositoryInterface;
+use FPopov\Repositories\Level\LevelRepository;
+use FPopov\Repositories\Level\LevelRepositoryInterface;
 use FPopov\Repositories\Monsters\MonstersRepository;
 use FPopov\Repositories\Monsters\MonstersRepositoryInterface;
+use FPopov\Repositories\Resources\ResourcesRepository;
+use FPopov\Repositories\Resources\ResourcesRepositoryInterface;
 use FPopov\Repositories\TypeMonsters\TypeMonstersRepository;
 use FPopov\Repositories\TypeMonsters\TypeMonstersRepositoryInterface;
+use FPopov\Repositories\TypeOfItems\TypeOfItemsRepository;
+use FPopov\Repositories\TypeOfItems\TypeOfItemsRepositoryInterface;
+use FPopov\Repositories\TypeOfResources\TypeOfResourcesRepository;
+use FPopov\Repositories\TypeOfResources\TypeOfResourcesRepositoryInterface;
 use FPopov\Services\AbstractService;
 use FPopov\Services\Application\AuthenticationServiceInterface;
+use FPopov\Services\Application\ResponseServiceInterface;
 use FPopov\Services\Hero\HeroService;
 
 class BattleService extends AbstractService implements BattleServiceInterface
 {
-
-
     const HERO_STATUS_IN_BATTLE = 2;
     const DEAD_BATTLE_STATUS = 0;
+
+    const WEAPON = 1;
+    const ARMOR = 0;
 
     private $view;
     private $authenticationService;
     private $session;
+    private $responseService;
 
     /** @var MonstersRepository */
     private $monstersRepository;
@@ -53,6 +71,21 @@ class BattleService extends AbstractService implements BattleServiceInterface
     /** @var  BattleRepository */
     private $battleRepository;
 
+    /** @var  TypeOfItemsRepository */
+    private $typeOfItemsRepository;
+
+    /** @var ItemsRepository */
+    private $itemsRepository;
+
+    /** @var  LevelRepository */
+    private $levelRepository;
+
+    /** @var  ResourcesRepository */
+    private $resourcesRepository;
+
+    /** @var TypeOfResourcesRepository  */
+    private $typeOfResourcesRepository;
+
     public function __construct(
         ViewInterface $view,
         AuthenticationServiceInterface $authenticationService,
@@ -60,7 +93,13 @@ class BattleService extends AbstractService implements BattleServiceInterface
         TypeMonstersRepositoryInterface $typeMonstersRepository,
         HeroRepositoryInterface $heroRepository,
         SessionInterface $session,
-        BattleRepositoryInterface $battleRepository
+        BattleRepositoryInterface $battleRepository,
+        TypeOfItemsRepositoryInterface $typeOfItemsRepository,
+        ItemsRepositoryInterface $itemsRepository,
+        LevelRepositoryInterface $levelRepository,
+        ResourcesRepositoryInterface $resourcesRepository,
+        TypeOfResourcesRepositoryInterface $typeOfResourcesRepository,
+        ResponseServiceInterface $responseService
     )
     {
         $this->view = $view;
@@ -70,6 +109,12 @@ class BattleService extends AbstractService implements BattleServiceInterface
         $this->heroRepository = $heroRepository;
         $this->session = $session;
         $this->battleRepository = $battleRepository;
+        $this->typeOfItemsRepository = $typeOfItemsRepository;
+        $this->itemsRepository = $itemsRepository;
+        $this->levelRepository = $levelRepository;
+        $this->resourcesRepository = $resourcesRepository;
+        $this->typeOfResourcesRepository = $typeOfResourcesRepository;
+        $this->responseService = $responseService;
     }
 
     public function pveBattle($params = [])
@@ -154,12 +199,6 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $heroId = $this->authenticationService->getHeroId();
 
-        $heroUpdateStatus = $this->heroRepository->update($heroId, ['hero_status' => self::HERO_STATUS_IN_BATTLE]);
-
-        if (! $heroUpdateStatus) {
-            throw new GameException('Can not update hero status');
-        }
-
         $heroParams = [
             HeroService::ITEM_IS_EQUIPED, $heroId, $heroId
         ];
@@ -198,6 +237,12 @@ class BattleService extends AbstractService implements BattleServiceInterface
         $typeOfBattle = isset($attackParams['typeOfBattle']) ? $attackParams['typeOfBattle'] : '';
         $attackerId = isset($attackParams['attackerId']) ? $attackParams['attackerId'] : 0;
         $defenderId = isset($attackParams['defenderId']) ? $attackParams['defenderId'] : 0;
+
+        $heroUpdateStatus = $this->heroRepository->update($attackerId, ['hero_status' => self::HERO_STATUS_IN_BATTLE]);
+
+        if (! $heroUpdateStatus) {
+            throw new GameException('Can not update hero status');
+        }
 
         if (empty($typeOfBattle)) {
             throw new GameException('Not set type of the battle');
@@ -301,7 +346,6 @@ class BattleService extends AbstractService implements BattleServiceInterface
         return $deadStatus;
     }
 
-
     private function makeAttack($params = [])
     {
         $attacker = isset($params['attacker']) ? $params['attacker'] : [];
@@ -373,4 +417,160 @@ class BattleService extends AbstractService implements BattleServiceInterface
             'defenderHealth' => (int) $defenderHealth
         ];
     }
+
+    public function attackerWinMonster($defenderId)
+    {
+        if (! $defenderId) {
+            throw new GameException('Not set defender id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero');
+        }
+
+        /** @var Hero $hero */
+        $hero = $this->heroRepository->findOneRowById($heroId, Hero::class);
+
+        $status = $hero->getHeroStatus();
+
+        if ($status != 2) {
+            $this->responseService->redirect('game', 'playHero', [$heroId]);
+        }
+
+        $changeHeroStatus = $this->heroRepository->update($heroId, ['hero_status' => 1]);
+
+        if (! $changeHeroStatus) {
+            throw new GameException('Can not change status');
+        }
+
+        /** @var Battle[] $battleDeadStatus2 */
+        $battleDeadStatus2 = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_monster_id' => $defenderId, 'dead_status' => 2], Battle::class);
+
+        $deleteBattle = $this->battleRepository->delete($battleDeadStatus2[0]->getId());
+
+        if (! $deleteBattle) {
+            throw new GameException('Can not delete battle with status 2');
+        }
+
+        /** @var Monsters $monsterInformation */
+        $monsterInformation = $this->monstersRepository->monsterInformation([$defenderId]);
+
+        $item = $this->generateItem();
+
+        $experienceAfterBattle = $hero->getExperience() + $monsterInformation->getWinExperience();
+
+        /** @var Level[] $levels */
+        $levels = $this->levelRepository->findAll(Level::class);
+
+        $currentLevel = $hero->getLevelId();
+        foreach ($levels as $level) {
+            if ($level->getFromExperience() < $experienceAfterBattle && $level->getToExperience() > $experienceAfterBattle) {
+                $currentLevel = $level->getLevelNumber();
+            }
+        }
+
+        $heroUpdate = $this->heroRepository->update($heroId, ['level_id' => $currentLevel, 'experience' => $experienceAfterBattle]);
+
+        if (! $heroUpdate) {
+            throw new GameException('$hero can not be update');
+        }
+
+        /** @var TypeOfResources[] $typeOfResources */
+        $typeOfResources = $this->typeOfResourcesRepository->findByCondition(['name' => HeroService::RESOURCES_COLD], TypeOfResources::class);
+
+        if (empty($typeOfResources)) {
+            throw new GameException('Can not found this resources');
+        }
+
+        /** @var Resources[] $resources */
+        $resources = $this->resourcesRepository->findByCondition(['heroes_id' => $heroId, 'type_of_resources_id' => $typeOfResources[0]->getId()], Resources::class);
+
+        if (empty($resources)) {
+            throw new GameException('Can not found this resources');
+        }
+
+        $goldFromMonster = rand($monsterInformation->getMinGold(), $monsterInformation->getMaxGold());
+
+        $gold = $resources[0]->getAmount() + $goldFromMonster;
+
+        $updateResources = $this->resourcesRepository->update($resources[0]->getId(), ['amount' => $gold]);
+
+        if (! $updateResources) {
+            throw new GameException('Can not update this row');
+        }
+
+        $informationForReturn = [
+            'monsterType' => $monsterInformation->getMonsterType(),
+            'gold' => $goldFromMonster,
+            'experience' => $monsterInformation->getWinExperience(),
+            'itemName' => $item
+        ];
+
+        return $informationForReturn;
+    }
+
+    // TODO When create to return id, not bool value
+    public function generateItem()
+    {
+        $typeOfItems = $this->typeOfItemsRepository->findAll(TypeOfItem::class);
+        $counterForItems = count($typeOfItems);
+
+        $dropItemsTypeId = rand(1, $counterForItems);
+
+        /** @var TypeOfItem $itemType */
+        $itemType = $this->typeOfItemsRepository->findOneRowById($dropItemsTypeId, TypeOfItem::class);
+
+        /** @var Item[] $itemRepo */
+        $itemRepo = $this->itemsRepository->findAll(Item::class);
+
+        $itemRepoCounter = count($itemRepo);
+
+        $latsItemId = $itemRepo[$itemRepoCounter - 1]->getId();
+
+        $itemName = 'Item' . ($latsItemId + 1);
+
+        $item = [
+            'strength' => rand(0, 3),
+            'vitality' => rand(0, 3),
+            'magic' => rand(0, 3),
+            'dexterity' => rand(0, 3),
+            'health' => rand(0, 10),
+            'mana' => rand(0, 10),
+            'type_of_item_id' => $dropItemsTypeId,
+            'hero_id' => $this->authenticationService->getHeroId(),
+            'is_equiped' => 0,
+            'critical' => 0,
+            'item_level' => 1,
+            'name' => $itemName
+        ];
+
+        switch ($itemType->getWeaponOrArmor()) {
+            case self::ARMOR :
+                $item['armor'] = rand(14, 30);
+                $item['damage_low_value'] = 0;
+                $item['damage_high_value'] = 0;
+                break;
+            case self::WEAPON :
+                $item['damage_low_value'] = rand(15, 20);
+                $item['damage_high_value'] = rand(21, 30);
+                $item['armor'] = 0;
+                break;
+            default :
+                $item['armor'] = rand(14, 30);
+                $item['damage_low_value'] = 0;
+                $item['damage_high_value'] = 0;
+                break;
+        }
+
+        try {
+            $itemCreate = $this->itemsRepository->create($item);
+        } catch (\Exception $e) {
+            return 'No item';
+        }
+
+        return $itemName;
+    }
 }
+

@@ -101,7 +101,10 @@ class MonstersRepository extends AbstractRepository implements MonstersRepositor
                 m.damage_high_value,
                 m.damage_low_value,
                 m.armor,
-                m.health
+                m.health,
+                m.win_experience,
+                m.min_gold,
+                m.max_gold
             FROM
                 monsters AS m
             INNER JOIN 

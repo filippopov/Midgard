@@ -27,6 +27,60 @@ class Monsters
 
     private $monster_type;
 
+    private $win_experience;
+
+    private $min_gold;
+
+    private $max_gold;
+
+    /**
+     * @return mixed
+     */
+    public function getMinGold()
+    {
+        return $this->min_gold;
+    }
+
+    /**
+     * @param mixed $min_gold
+     */
+    public function setMinGold($min_gold)
+    {
+        $this->min_gold = $min_gold;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMaxGold()
+    {
+        return $this->max_gold;
+    }
+
+    /**
+     * @param mixed $max_gold
+     */
+    public function setMaxGold($max_gold)
+    {
+        $this->max_gold = $max_gold;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getWinExperience()
+    {
+        return $this->win_experience;
+    }
+
+    /**
+     * @param mixed $win_experience
+     */
+    public function setWinExperience($win_experience)
+    {
+        $this->win_experience = $win_experience;
+    }
+
     /**
      * @return mixed
      */

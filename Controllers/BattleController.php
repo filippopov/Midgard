@@ -13,6 +13,7 @@ use FPopov\Core\ViewInterface;
 use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Models\DB\Monsters\Monsters;
 use FPopov\Models\View\Battle\BattleHeroMonsterViewModel;
+use FPopov\Models\View\Battle\BattleHeroWinMonsterViewModel;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
 use FPopov\Services\Battle\BattleServiceInterface;
@@ -24,6 +25,10 @@ class BattleController
     private $MVCContext;
     private $view;
     private $battleService;
+
+    const DEAD_STATUS_NEUTRAL = 0;
+    const DEAD_STATUS_ATTACKER = 1;
+    const DEAD_STATUS_DEFENDER = 2;
 
     public function __construct(
         AuthenticationServiceInterface $authenticationService,
@@ -154,9 +159,47 @@ class BattleController
 
         $attackData = $this->battleService->attack($attackParams);
 
-
-        $this->responseService->redirect('battle', 'attackMonster', [$defenderId, $attackData]);
+        switch ($attackData) {
+            case self::DEAD_STATUS_NEUTRAL :
+                $this->responseService->redirect('battle', 'attackMonster', [$defenderId, $attackData]);
+                break;
+            case self::DEAD_STATUS_ATTACKER :
+                $this->responseService->redirect('battle', 'defenderWinHero', [$defenderId]);
+                break;
+            case self::DEAD_STATUS_DEFENDER :
+                $this->responseService->redirect('battle', 'attackerWinMonster', [$defenderId]);
+                break;
+        }
     }
 
+    public function attackerWinMonster()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $defender = $this->MVCContext->getArguments();
+        $defenderId = isset($defender[0]) ? $defender[0] : 0;
+
+        $informationAfterBattle = $this->battleService->attackerWinMonster($defenderId);
+
+        $monsterType = isset($informationAfterBattle['monsterType']) ? $informationAfterBattle['monsterType'] : '';
+        $gold = isset($informationAfterBattle['gold']) ? $informationAfterBattle['gold'] : '';
+        $experience = isset($informationAfterBattle['experience']) ? $informationAfterBattle['experience'] : '';
+        $itemName = isset($informationAfterBattle['itemName']) ? $informationAfterBattle['itemName'] : '';
+
+        $returnModel = new BattleHeroWinMonsterViewModel($monsterType, $gold, $experience, $itemName);
+
+        $this->view->render(['model' => $returnModel]);
+    }
+
+    public function defenderWinHero()
+    {
+        $this->view->render();
+    }
 
 }

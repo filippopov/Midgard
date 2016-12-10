@@ -17,6 +17,24 @@ class TypeOfItem
 
     private $for_type_of_heroes;
 
+    private $weapon_or_armor;
+
+    /**
+     * @return mixed
+     */
+    public function getWeaponOrArmor()
+    {
+        return $this->weapon_or_armor;
+    }
+
+    /**
+     * @param mixed $weapon_or_armor
+     */
+    public function setWeaponOrArmor($weapon_or_armor)
+    {
+        $this->weapon_or_armor = $weapon_or_armor;
+    }
+
     /**
      * @return mixed
      */
