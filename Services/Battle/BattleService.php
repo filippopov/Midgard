@@ -448,10 +448,12 @@ class BattleService extends AbstractService implements BattleServiceInterface
         /** @var Battle[] $battleDeadStatus2 */
         $battleDeadStatus2 = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_monster_id' => $defenderId, 'dead_status' => 2], Battle::class);
 
-        $deleteBattle = $this->battleRepository->delete($battleDeadStatus2[0]->getId());
+        if (! empty($battleDeadStatus2)) {
+            $deleteBattle = $this->battleRepository->delete($battleDeadStatus2[0]->getId());
 
-        if (! $deleteBattle) {
-            throw new GameException('Can not delete battle with status 2');
+            if (! $deleteBattle) {
+                throw new GameException('Can not delete battle with status 2');
+            }
         }
 
         /** @var Monsters $monsterInformation */
@@ -509,6 +511,79 @@ class BattleService extends AbstractService implements BattleServiceInterface
         ];
 
         return $informationForReturn;
+    }
+
+    public function defenderWinHero($defenderId)
+    {
+        if (! $defenderId) {
+            throw new GameException('Not set defender id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero');
+        }
+
+        /** @var Hero $hero */
+        $hero = $this->heroRepository->findOneRowById($heroId, Hero::class);
+
+        $status = $hero->getHeroStatus();
+
+        if ($status != 2) {
+            $this->responseService->redirect('game', 'playHero', [$heroId]);
+        }
+
+        /** @var Battle[] $battleDeadStatus1 */
+        $battleDeadStatus1 = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_monster_id' => $defenderId, 'dead_status' => 1], Battle::class);
+
+        if (! empty($battleDeadStatus1)) {
+            $deleteBattle = $this->battleRepository->delete($battleDeadStatus1[0]->getId());
+
+            if (! $deleteBattle) {
+                throw new GameException('Can not delete battle with status 2');
+            }
+        }
+
+        /** @var Monsters $monsterInformation */
+        $monsterInformation = $this->monstersRepository->monsterInformation([$defenderId]);
+
+        $heroHalfFromMaxHP = $hero->getHealth() / 2;
+
+        $experienceTakeTen = ($hero->getExperience() / 100) * 10;
+
+        $experienceAfterBattle = $hero->getExperience() - $experienceTakeTen;
+
+        /** @var Level[] $levels */
+        $levels = $this->levelRepository->findAll(Level::class);
+
+        $currentLevel = $hero->getLevelId();
+        foreach ($levels as $level) {
+            if ($level->getFromExperience() < $experienceAfterBattle && $level->getToExperience() > $experienceAfterBattle) {
+                $currentLevel = $level->getLevelNumber();
+            }
+        }
+
+        $newHeroData = [
+            'hero_status' => 1,
+            'level_id' => $currentLevel,
+            'experience' => $experienceAfterBattle,
+            'real_health' => $heroHalfFromMaxHP,
+        ];
+
+        $changeHero = $this->heroRepository->update($heroId, $newHeroData);
+
+        if (! $changeHero) {
+            throw new GameException('Can not change hero data');
+        }
+
+        $returnData = [
+            'monsterType' => $monsterInformation->getMonsterType(),
+            'lostExperience' => $experienceTakeTen,
+            'heroHealth' => $heroHalfFromMaxHP
+        ];
+
+        return $returnData;
     }
 
     // TODO When create to return id, not bool value
@@ -572,5 +647,7 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         return $itemName;
     }
+
+
 }
 

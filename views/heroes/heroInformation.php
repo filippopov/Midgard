@@ -1,6 +1,8 @@
 <?php
 /** @var \FPopov\Core\ViewInterface $this */
 /** @var \FPopov\Models\DB\Hero\HeroStatistic $model */
+
+$heroId = isset($heroId) ? $heroId : 0;
 ?>
 
 <div class="container">
@@ -26,5 +28,10 @@
         <div><strong>Hero vitality: </strong><?php echo $model->getVitality()?></div>
         <div><strong>Hero magic: </strong><?php echo $model->getMagic()?></div>
         <div><strong>Hero critical chance: </strong><?php echo $model->getCriticalChance() . '%'?></div>
+        <br>
+        <ul class="nav nav-pills">
+            <li><a href="<?php echo $this->uri('game', 'playHero', [$heroId])?>">Back to menu</a></li>
+        </ul>
     </div>
 </div>
+

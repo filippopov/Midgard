@@ -31,6 +31,43 @@ class Hero
 
     private $hero_status;
 
+    private $health;
+
+    private $mana;
+
+    /**
+     * @return mixed
+     */
+    public function getHealth()
+    {
+        return $this->health;
+    }
+
+    /**
+     * @param mixed $health
+     */
+    public function setHealth($health)
+    {
+        $this->health = $health;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMana()
+    {
+        return $this->mana;
+    }
+
+    /**
+     * @param mixed $mana
+     */
+    public function setMana($mana)
+    {
+        $this->mana = $mana;
+    }
+
+
     /**
      * @return mixed
      */

@@ -36,13 +36,15 @@ $monsterId = isset($monsterId) ? $monsterId : 0;
                     'defender' => $monsterId])?>">
                     <button name="attack" type="submit" class="btn btn-default" value="attack">Attack</button>
                 </form></li>
-            <li><a href="#">Run from battle</a></li>
+            <li><form method="post" action="<?php echo $this->uri('battle', 'runFromBattle', [
+                    'attackCreature' => 'monster',
+                    'attacker' => $heroId,
+                    'defender' => $monsterId])?>">
+                    <button name="attack" type="submit" class="btn btn-default" value="attack">Run from battle</button>
+                </form></li>
         </ul>
     </div>
 </div>
-
-
-
 
 
 

@@ -14,6 +14,7 @@ use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Models\DB\Monsters\Monsters;
 use FPopov\Models\View\Battle\BattleHeroMonsterViewModel;
 use FPopov\Models\View\Battle\BattleHeroWinMonsterViewModel;
+use FPopov\Models\View\Battle\BattleMonsterWinHeroViewModel;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
 use FPopov\Services\Battle\BattleServiceInterface;
@@ -172,6 +173,40 @@ class BattleController
         }
     }
 
+    public function runFromBattle()
+    {
+        $mvcContext = $this->MVCContext->getArguments();
+        $attackerId = isset($mvcContext[1]) ? $mvcContext[1] : 0;
+        $defenderId = isset($mvcContext[2]) ? $mvcContext[2] : 0;
+        $typeOfBattle = isset($mvcContext[0]) ? $mvcContext[0] : '';
+
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+            if ($this->authenticationService->getHeroId() != $attackerId) {
+                $this->responseService->redirect('heroes', 'createHero');
+            }
+        }
+
+        if (! $this->authenticationService->isAuthenticatedMonster()) {
+            $this->responseService->redirect('heroes', 'createHero');
+            if ($this->authenticationService->getMonsterId() != $defenderId) {
+                $this->responseService->redirect('heroes', 'createHero');
+            }
+        }
+
+        $runParams = [
+            'typeOfBattle' => $typeOfBattle,
+            'attackerId' => $attackerId,
+            'defenderId' => $defenderId
+        ];
+
+        dd($runParams);
+    }
+
     public function attackerWinMonster()
     {
         if (! $this->authenticationService->isAuthenticated()) {
@@ -199,7 +234,26 @@ class BattleController
 
     public function defenderWinHero()
     {
-        $this->view->render();
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $defender = $this->MVCContext->getArguments();
+        $defenderId = isset($defender[0]) ? $defender[0] : 0;
+
+        $informationAfterBattle = $this->battleService->defenderWinHero($defenderId);
+
+        $monsterType = isset($informationAfterBattle['monsterType']) ? $informationAfterBattle['monsterType'] : '';
+        $lostExperience = isset($informationAfterBattle['lostExperience']) ? $informationAfterBattle['lostExperience'] : '';
+        $heroHealth = isset($informationAfterBattle['heroHealth']) ? $informationAfterBattle['heroHealth'] : '';
+
+        $renderViewModel = new BattleMonsterWinHeroViewModel($monsterType, $lostExperience, $heroHealth);
+
+        $this->view->render(['model' => $renderViewModel]);
     }
 
 }
