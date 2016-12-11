@@ -12,11 +12,13 @@ use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
 use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Models\DB\Monsters\Monsters;
+use FPopov\Models\View\Battle\BattleHeroDefenderHeroViewModel;
 use FPopov\Models\View\Battle\BattleHeroMonsterViewModel;
 use FPopov\Models\View\Battle\BattleHeroWinMonsterViewModel;
 use FPopov\Models\View\Battle\BattleMonsterWinHeroViewModel;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
+use FPopov\Services\Battle\BattleService;
 use FPopov\Services\Battle\BattleServiceInterface;
 
 class BattleController
@@ -144,6 +146,78 @@ class BattleController
         $this->view->render($params);
     }
 
+    public function attackHero($defenderHeroId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $battleData = $this->battleService->attackHero($defenderHeroId);
+
+        /** @var HeroStatistic $heroInfo */
+        $heroInfo = isset($battleData['heroInformation']) ? $battleData['heroInformation'] : [];
+
+        /** @var HeroStatistic $defenderHeroInfo */
+        $defenderHeroInfo = isset($battleData['defenderHeroInformation']) ? $battleData['defenderHeroInformation'] : [];
+
+        $heroAndDefendHeroInBattle = isset($battleData['heroAndDefendHeroInBattle']) ? $battleData['heroAndDefendHeroInBattle'] : false;
+        $defendHeroRealHealth = isset($battleData['defendHeroRealHealth']) ? $battleData['defendHeroRealHealth'] : 0;
+
+        $heroName = $heroInfo->getHeroName();
+        $heroRealHealth = $heroInfo->getRealHealth();
+        $heroRealMana = $heroInfo->getRealMana();
+        $heroDamageLowValue = $heroInfo->getDamageLowValue();
+        $heroDamageHighValue = $heroInfo->getDamageHighValue();
+        $heroArmor = $heroInfo->getArmor();
+        $heroMaxHealth = $heroInfo->getMaxHealth();
+        $heroMaxMana = $heroInfo->getMaxMana();
+        $heroCriticalChance = $heroInfo->getCriticalChance();
+        $heroLevelNumber = $heroInfo->getLevelNumber();
+        $heroType = $heroInfo->getHeroType();
+        $defenderHeroName = $defenderHeroInfo->getHeroName();
+        $defenderHeroHealth = $defenderHeroInfo->getMaxHealth();
+        $defenderHeroMana = $defenderHeroInfo->getMaxMana();
+        $defenderHeroDamageLowValue = $defenderHeroInfo->getDamageLowValue();
+        $defenderHeroDamageHighValue = $defenderHeroInfo->getDamageHighValue();
+        $defenderHeroArmor = $defenderHeroInfo->getArmor();
+        $defenderHeroCriticalChance = $defenderHeroInfo->getCriticalChance();
+        $defenderHeroLevelNumber = $defenderHeroInfo->getLevelNumber();
+        $defenderHeroType = $defenderHeroInfo->getHeroType();
+
+        $battleHeroDefenderHeroViewModel = new BattleHeroDefenderHeroViewModel(
+            $heroName,
+            $heroRealHealth,
+            $heroRealMana,
+            $heroDamageLowValue,
+            $heroDamageHighValue,
+            $heroArmor,
+            $heroMaxHealth,
+            $heroMaxMana,
+            $heroCriticalChance,
+            $heroLevelNumber,
+            $heroType,
+            $defenderHeroName,
+            $defenderHeroHealth,
+            $defenderHeroMana,
+            $defenderHeroDamageLowValue,
+            $defenderHeroDamageHighValue,
+            $defenderHeroArmor,
+            $defenderHeroCriticalChance,
+            $defenderHeroLevelNumber,
+            $defenderHeroType,
+            $heroAndDefendHeroInBattle,
+            $defendHeroRealHealth
+        );
+
+        $params = ['model' => $battleHeroDefenderHeroViewModel];
+
+        $this->view->render($params);
+    }
+
     public function attack()
     {
         $mvcContext = $this->MVCContext->getArguments();
@@ -179,13 +253,13 @@ class BattleController
 
         switch ($attackData) {
             case self::DEAD_STATUS_NEUTRAL :
-                $this->responseService->redirect('battle', 'attackMonster', [$defenderId, $attackData]);
+                $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'attackMonster', [$defenderId, $attackData]) : $this->responseService->redirect('battle', 'attackHero', [$defenderId, $attackData]);
                 break;
             case self::DEAD_STATUS_ATTACKER :
-                $this->responseService->redirect('battle', 'defenderWinHero', [$defenderId]);
+                $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'defenderWinHero', [$defenderId]) : $this->responseService->redirect('battle', 'defenderHeroWinHero', [$defenderId]);
                 break;
             case self::DEAD_STATUS_DEFENDER :
-                $this->responseService->redirect('battle', 'attackerWinMonster', [$defenderId]);
+                $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'attackerWinMonster', [$defenderId]) : $this->responseService->redirect('battle', 'attackerWinHero', [$defenderId]);
                 break;
         }
     }
@@ -273,6 +347,22 @@ class BattleController
         $renderViewModel = new BattleMonsterWinHeroViewModel($monsterType, $lostExperience, $heroHealth);
 
         $this->view->render(['model' => $renderViewModel]);
+    }
+
+    public function defenderHeroWinHero()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $defender = $this->MVCContext->getArguments();
+        $defenderId = isset($defender[0]) ? $defender[0] : 0;
+
+        $informationAfterBattle = $this->battleService->defenderHeroWinHero($defenderId);
     }
 
 }

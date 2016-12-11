@@ -52,6 +52,10 @@ class BattleService extends AbstractService implements BattleServiceInterface
     const HERO_STATUS_OUT_OF_BATTLE = 1;
     const DEAD_BATTLE_STATUS = 0;
 
+    const TYPE_OF_BATTLE_PVP = 'player';
+    const TYPE_OF_BATTLE_PVE = 'monster';
+
+
     const WEAPON = 1;
     const ARMOR = 0;
 
@@ -153,7 +157,7 @@ class BattleService extends AbstractService implements BattleServiceInterface
                     return 'Attack';
                 },
                 'onClick' => function ($row) {
-                    return $this->view->uri('battle', 'attackHero', ['heroId' => $row['id']]);
+                    return $this->view->uri('battle', 'attackHero', ['defenderHeroId' => $row['id']]);
                 }
             ]
         ];
@@ -291,14 +295,63 @@ class BattleService extends AbstractService implements BattleServiceInterface
         ];
     }
 
+    public function attackHero($defenderHeroId)
+    {
+        if (empty($defenderHeroId)) {
+            throw new GameException('Not set monster Id');
+        }
+
+        $this->session->set('defenderHeroId', $defenderHeroId);
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        $heroParams = [
+            HeroService::ITEM_IS_EQUIPED, $heroId, $heroId
+        ];
+
+        /** @var HeroStatistic $heroInformation */
+        $heroInformation = $this->heroRepository->heroInformation($heroParams);
+
+        $heroAndDefendHeroInBattle = false;
+        $defendHeroRealHealth = 0;
+        if ($heroInformation->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
+            /** @var Battle[] $isInBattle */
+            $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_hero_id' => $defenderHeroId], Battle::class);
+
+            if (! empty($isInBattle)) {
+                $counter = count($isInBattle) - 1;
+
+                if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
+                    $heroAndDefendHeroInBattle = true;
+                    $defendHeroRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                }
+            }
+        }
+
+        $defenderHeroParams = [
+            HeroService::ITEM_IS_EQUIPED, $defenderHeroId, $defenderHeroId
+        ];
+
+        $defenderHeroInformation = $this->heroRepository->heroInformation($defenderHeroParams);
+
+        return [
+            'heroInformation' => $heroInformation,
+            'defenderHeroInformation' => $defenderHeroInformation,
+            'heroAndDefendHeroInBattle' => $heroAndDefendHeroInBattle,
+            'defendHeroRealHealth' => $defendHeroRealHealth
+        ];
+    }
+
     public function runFromBattle($runParams = [])
     {
         $typeOfBattle = isset($runParams['typeOfBattle']) ? $runParams['typeOfBattle'] : '';
         $attackerId = isset($runParams['attackerId']) ? $runParams['attackerId'] : 0;
         $defenderId = isset($runParams['defenderId']) ? $runParams['defenderId'] : 0;
 
+        $defenderPVEOrPVP = $typeOfBattle == self::TYPE_OF_BATTLE_PVE ? 'defender_monster_id' : 'defender_hero_id';
+
         /** @var Battle[] $allBattles */
-        $allBattles = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+        $allBattles = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, $defenderPVEOrPVP => $defenderId], Battle::class);
 
         if (! empty($allBattles)) {
             foreach ($allBattles as $battle) {
@@ -351,39 +404,80 @@ class BattleService extends AbstractService implements BattleServiceInterface
         /** @var HeroStatistic $attacker */
         $attacker = $this->heroRepository->heroInformation($heroParams);
 
-        $monsterAndHeroInBattle = false;
-        $monsterRealHealth = 0;
-        if ($attacker->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
-            /** @var Battle[] $isInBattle */
-            $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+        if ($typeOfBattle == self::TYPE_OF_BATTLE_PVE) {
+            $monsterAndHeroInBattle = false;
+            $monsterRealHealth = 0;
+            if ($attacker->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
+                /** @var Battle[] $isInBattle */
+                $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
 
-            if (! empty($isInBattle)) {
-                $counter = count($isInBattle) - 1;
+                if (! empty($isInBattle)) {
+                    $counter = count($isInBattle) - 1;
 
-                if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
-                    $monsterAndHeroInBattle = true;
-                    $monsterRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                    if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
+                        $monsterAndHeroInBattle = true;
+                        $monsterRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                    }
                 }
             }
+
+            /** @var Monsters $monster */
+            $monster = $this->monstersRepository->monsterInformation([$defenderId]);
+
+            $makeAttack = [
+                'attacker' => [
+                    'damageLowValue' => $attacker->getDamageLowValue(),
+                    'damageHighValue' => $attacker->getDamageHighValue(),
+                    'health' => $attacker->getRealHealth(),
+                    'armor' => $attacker->getArmor()
+                ],
+                'defender' => [
+                    'damageLowValue' => $monster->getDamageLowValue(),
+                    'damageHighValue' => $monster->getDamageHighValue(),
+                    'health' => $monsterAndHeroInBattle ? $monsterRealHealth : $monster->getHealth(),
+                    'armor' => $monster->getArmor()
+                ]
+            ];
+
+        } else {
+            $heroAndDefendHeroInBattle = false;
+            $heroRealHealth = 0;
+            if ($attacker->getHeroStatus() == self::HERO_STATUS_IN_BATTLE) {
+                /** @var Battle[] $isInBattle */
+                $isInBattle = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_hero_id' => $defenderId], Battle::class);
+
+                if (! empty($isInBattle)) {
+                    $counter = count($isInBattle) - 1;
+
+                    if ($isInBattle[$counter]->getDeadStatus() == self::DEAD_BATTLE_STATUS) {
+                        $heroAndDefendHeroInBattle = true;
+                        $heroRealHealth = $isInBattle[$counter]->getDefenderHealthAfterAttack();
+                    }
+                }
+            }
+
+            $defendHeroParams = [
+                HeroService::ITEM_IS_EQUIPED, $defenderId, $defenderId
+            ];
+
+            /** @var HeroStatistic $defenderHero */
+            $defenderHero = $this->heroRepository->heroInformation($defendHeroParams);
+
+            $makeAttack = [
+                'attacker' => [
+                    'damageLowValue' => $attacker->getDamageLowValue(),
+                    'damageHighValue' => $attacker->getDamageHighValue(),
+                    'health' => $attacker->getRealHealth(),
+                    'armor' => $attacker->getArmor()
+                ],
+                'defender' => [
+                    'damageLowValue' => $defenderHero->getDamageLowValue(),
+                    'damageHighValue' => $defenderHero->getDamageHighValue(),
+                    'health' => $heroAndDefendHeroInBattle ? $heroRealHealth : $defenderHero->getMaxHealth(),
+                    'armor' => $defenderHero->getArmor()
+                ]
+            ];
         }
-
-        /** @var Monsters $monster */
-        $monster = $this->monstersRepository->monsterInformation([$defenderId]);
-
-        $makeAttack = [
-            'attacker' => [
-                'damageLowValue' => $attacker->getDamageLowValue(),
-                'damageHighValue' => $attacker->getDamageHighValue(),
-                'health' => $attacker->getRealHealth(),
-                'armor' => $attacker->getArmor()
-            ],
-            'defender' => [
-                'damageLowValue' => $monster->getDamageLowValue(),
-                'damageHighValue' => $monster->getDamageHighValue(),
-                'health' => $monsterAndHeroInBattle ? $monsterRealHealth : $monster->getHealth(),
-                'armor' => $monster->getArmor()
-            ]
-        ];
 
         $resultAttack = $this->makeAttack($makeAttack);
         $attackerHit = isset($resultAttack['attackerHit']) ? $resultAttack['attackerHit'] : 0;
@@ -396,17 +490,22 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $createBattleParams = [
             'attacker_id' => $attackerId,
-            'defender_monster_id' => $defenderId,
+            'defender_monster_id' => $typeOfBattle == self::TYPE_OF_BATTLE_PVE ? $defenderId : 0,
             'attacker_hit' => $attackerHit,
             'defender_hit' => $defenderHit,
-            'defender_hero_id' => 0,
+            'defender_hero_id' => $typeOfBattle == self::TYPE_OF_BATTLE_PVP ? $defenderId : 0,
             'defender_health_after_attack' => $defenderHealthAfterAttack,
             'attacker_health_after_attack' => $attackerHealthAfterAttack,
             'dead_status' => $deadStatus
         ];
 
-        /** @var Battle[] $deleteBattleRows */
-        $deleteBattleRows = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+        if ($typeOfBattle == self::TYPE_OF_BATTLE_PVE) {
+            /** @var Battle[] $deleteBattleRows */
+            $deleteBattleRows = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_monster_id' => $defenderId], Battle::class);
+        } else {
+            /** @var Battle[] $deleteBattleRows */
+            $deleteBattleRows = $this->battleRepository->findByCondition(['attacker_id' => $attackerId, 'defender_hero_id' => $defenderId], Battle::class);
+        }
 
         foreach ($deleteBattleRows as $deleteBattleRow) {
             $deleteBattle = $this->battleRepository->delete($deleteBattleRow->getId());
@@ -598,6 +697,12 @@ class BattleService extends AbstractService implements BattleServiceInterface
         return $informationForReturn;
     }
 
+    public function defenderHeroWinHero($defenderId)
+    {
+        dd('under development');
+        // TODO: Implement defenderHeroWinHero() method.
+    }
+
     public function defenderWinHero($defenderId)
     {
         if (! $defenderId) {
@@ -730,6 +835,5 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         return $itemName;
     }
-
 }
 

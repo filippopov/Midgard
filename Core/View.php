@@ -49,6 +49,8 @@ class View implements ViewInterface
 
         $heroId = 0;
         $monsterId = 0;
+        $defenderId = 0;
+
 
         if ($this->authenticationService->isAuthenticatedHero()) {
             $heroId = $this->authenticationService->getHeroId();
@@ -56,6 +58,10 @@ class View implements ViewInterface
 
         if ($this->authenticationService->isAuthenticatedMonster()) {
             $monsterId = $this->authenticationService->getMonsterId();
+        }
+
+        if ($this->authenticationService->isAuthenticatedAttackHero()) {
+            $defenderId = $this->authenticationService->getAttackHeroId();
         }
 
         if ($isToEscape) {
