@@ -142,6 +142,10 @@ class BattleService extends AbstractService implements BattleServiceInterface
                 'title' => 'Hero Name',
                 'type' => self::TYPE_DATA
             ],
+            'type_of_hero' => [
+                'title' => 'Hero Type',
+                'type' => self::TYPE_DATA
+            ],
             'level_number' => [
                 'title' => 'Level',
                 'type' => self::TYPE_DATA
@@ -699,8 +703,133 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
     public function defenderHeroWinHero($defenderId)
     {
-        dd('under development');
-        // TODO: Implement defenderHeroWinHero() method.
+        if (! $defenderId) {
+            throw new GameException('Not set defender id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero');
+        }
+
+        /** @var Hero $hero */
+        $hero = $this->heroRepository->findOneRowById($heroId, Hero::class);
+
+        $status = $hero->getHeroStatus();
+
+        if ($status != 2) {
+            $this->responseService->redirect('game', 'playHero', [$heroId]);
+        }
+
+        /** @var Battle[] $battleDeadStatus1 */
+        $battleDeadStatus1 = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_hero_id' => $defenderId, 'dead_status' => 1], Battle::class);
+
+        if (! empty($battleDeadStatus1)) {
+            $deleteBattle = $this->battleRepository->delete($battleDeadStatus1[0]->getId());
+
+            if (! $deleteBattle) {
+                throw new GameException('Can not delete battle with status 2');
+            }
+        }
+
+        $heroHalfFromMaxHP = $hero->getHealth() / 2;
+
+        $winHonor = $this->battleRepository->getWinHonorData([HeroService::RESOURCES_HONOR, $defenderId]);
+
+        $loseHonor = $this->battleRepository->getLoseHonorData([HeroService::RESOURCES_HONOR, $heroId]);
+
+        $updateWiner = $this->resourcesRepository->update($winHonor['id'], ['amount' => $winHonor['amaunt']]);
+
+        if (! $updateWiner) {
+            throw new GameException('Can not update honor');
+        }
+
+        $updateLoser = $this->resourcesRepository->update($loseHonor['id'], ['amount' => $loseHonor['amaunt']]);
+
+        if (! $updateLoser) {
+            throw new GameException('Can not update honor');
+        }
+
+        $newHeroData = [
+            'hero_status' => 1,
+            'real_health' => $heroHalfFromMaxHP,
+        ];
+
+        $changeHero = $this->heroRepository->update($heroId, $newHeroData);
+
+        if (! $changeHero) {
+            throw new GameException('Can not change hero data');
+        }
+
+        return [
+            'heroHalfFromMaxHP' => $heroHalfFromMaxHP,
+            'winnerHonor' => $winHonor['amaunt'],
+            'loseHonor' => $loseHonor['amaunt']
+        ];
+    }
+
+    public function attackerHeroWinHero($defenderId)
+    {
+        if (! $defenderId) {
+            throw new GameException('Not set defender id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero');
+        }
+
+        /** @var Hero $hero */
+        $hero = $this->heroRepository->findOneRowById($heroId, Hero::class);
+
+        $status = $hero->getHeroStatus();
+
+        if ($status != 2) {
+            $this->responseService->redirect('game', 'playHero', [$heroId]);
+        }
+
+        /** @var Battle[] $battleDeadStatus1 */
+        $battleDeadStatus1 = $this->battleRepository->findByCondition(['attacker_id' => $heroId, 'defender_hero_id' => $defenderId, 'dead_status' => 1], Battle::class);
+
+        if (! empty($battleDeadStatus1)) {
+            $deleteBattle = $this->battleRepository->delete($battleDeadStatus1[0]->getId());
+
+            if (! $deleteBattle) {
+                throw new GameException('Can not delete battle with status 2');
+            }
+        }
+
+        $winHonor = $this->battleRepository->getWinHonorData([HeroService::RESOURCES_HONOR, $heroId]);
+
+        $loseHonor = $this->battleRepository->getLoseHonorData([HeroService::RESOURCES_HONOR, $defenderId]);
+
+        $updateWiner = $this->resourcesRepository->update($winHonor['id'], ['amount' => $winHonor['amaunt']]);
+
+        if (! $updateWiner) {
+            throw new GameException('Can not update honor');
+        }
+
+        $updateLoser = $this->resourcesRepository->update($loseHonor['id'], ['amount' => $loseHonor['amaunt']]);
+
+        if (! $updateLoser) {
+            throw new GameException('Can not update honor');
+        }
+
+        $newHeroData = [
+            'hero_status' => 1
+        ];
+
+        $changeHero = $this->heroRepository->update($heroId, $newHeroData);
+
+        if (! $changeHero) {
+            throw new GameException('Can not change hero data');
+        }
+
+        return [
+            'winnerHonor' => $winHonor['amaunt'],
+        ];
     }
 
     public function defenderWinHero($defenderId)

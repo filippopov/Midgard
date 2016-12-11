@@ -12,6 +12,9 @@ use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
 use FPopov\Models\DB\Hero\HeroStatistic;
 use FPopov\Models\DB\Monsters\Monsters;
+use FPopov\Models\View\Battle\AttackerHeroWinHeroViewModel;
+use FPopov\Models\View\Battle\BattleAttackerHeroWinHeroViewModel;
+use FPopov\Models\View\Battle\BattleDefenderHeroWinHeroViewModel;
 use FPopov\Models\View\Battle\BattleHeroDefenderHeroViewModel;
 use FPopov\Models\View\Battle\BattleHeroMonsterViewModel;
 use FPopov\Models\View\Battle\BattleHeroWinMonsterViewModel;
@@ -23,15 +26,15 @@ use FPopov\Services\Battle\BattleServiceInterface;
 
 class BattleController
 {
+    const DEAD_STATUS_NEUTRAL = 0;
+    const DEAD_STATUS_ATTACKER = 1;
+    const DEAD_STATUS_DEFENDER = 2;
+
     private $authenticationService;
     private $responseService;
     private $MVCContext;
     private $view;
     private $battleService;
-
-    const DEAD_STATUS_NEUTRAL = 0;
-    const DEAD_STATUS_ATTACKER = 1;
-    const DEAD_STATUS_DEFENDER = 2;
 
     public function __construct(
         AuthenticationServiceInterface $authenticationService,
@@ -259,7 +262,7 @@ class BattleController
                 $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'defenderWinHero', [$defenderId]) : $this->responseService->redirect('battle', 'defenderHeroWinHero', [$defenderId]);
                 break;
             case self::DEAD_STATUS_DEFENDER :
-                $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'attackerWinMonster', [$defenderId]) : $this->responseService->redirect('battle', 'attackerWinHero', [$defenderId]);
+                $typeOfBattle == BattleService::TYPE_OF_BATTLE_PVE ? $this->responseService->redirect('battle', 'attackerWinMonster', [$defenderId]) : $this->responseService->redirect('battle', 'attackerHeroWinHero', [$defenderId]);
                 break;
         }
     }
@@ -363,6 +366,35 @@ class BattleController
         $defenderId = isset($defender[0]) ? $defender[0] : 0;
 
         $informationAfterBattle = $this->battleService->defenderHeroWinHero($defenderId);
+
+        $heroHalfFromMaxHP = isset($informationAfterBattle['heroHalfFromMaxHP']) ? $informationAfterBattle['heroHalfFromMaxHP'] : 0;
+        $winnerHonor = isset($informationAfterBattle['winnerHonor']) ? $informationAfterBattle['winnerHonor'] : 0;
+        $loseHonor = isset($informationAfterBattle['loseHonor']) ? $informationAfterBattle['loseHonor'] : 0;
+
+        $model = new BattleDefenderHeroWinHeroViewModel($heroHalfFromMaxHP, $winnerHonor, $loseHonor);
+
+        $this->view->render(['model' => $model]);
     }
 
+    public function attackerHeroWinHero()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $defender = $this->MVCContext->getArguments();
+        $defenderId = isset($defender[0]) ? $defender[0] : 0;
+
+        $informationAfterBattle = $this->battleService->attackerHeroWinHero($defenderId);
+
+        $winnerHonor = isset($informationAfterBattle['winnerHonor']) ? $informationAfterBattle['winnerHonor'] : 0;
+
+        $model = new BattleAttackerHeroWinHeroViewModel($winnerHonor);
+
+        $this->view->render(['model' => $model]);
+    }
 }

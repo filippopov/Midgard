@@ -14,4 +14,8 @@ interface BattleRepositoryInterface
     public function findAllHeroesForCurrentCity($params = []);
 
     public function findAllHeroesForCurrentCityCount($params = []);
+
+    public function getWinHonorData($params = []);
+
+    public function getLoseHonorData($params = []);
 }

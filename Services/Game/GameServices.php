@@ -88,6 +88,11 @@ class GameServices extends AbstractService implements GameServicesInterface
                 'menuItem' => 'PVP Battle',
                 'controller' => 'battle',
                 'action' => 'pvpBattle'
+            ],
+            3 => [
+                'menuItem' => 'Inventory',
+                'controller' => 'inventory',
+                'action' => 'inventory'
             ]
         ];
 

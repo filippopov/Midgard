@@ -11,5 +11,5 @@ namespace FPopov\Repositories\Items;
 
 interface ItemsRepositoryInterface
 {
-
+    public function getAllItemsForOneHero($params = []);
 }

@@ -28,4 +28,6 @@ interface BattleServiceInterface
     public function runFromBattle($runParams = []);
 
     public function defenderHeroWinHero($defenderId);
+
+    public function attackerHeroWinHero($defenderId);
 }
