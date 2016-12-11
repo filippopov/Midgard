@@ -12,4 +12,6 @@ namespace FPopov\Repositories\Items;
 interface ItemsRepositoryInterface
 {
     public function getAllItemsForOneHero($params = []);
+
+    public function getAllItemsForOneHeroCount($params = []);
 }
