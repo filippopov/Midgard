@@ -55,6 +55,7 @@ class BattleService extends AbstractService implements BattleServiceInterface
     const TYPE_OF_BATTLE_PVP = 'player';
     const TYPE_OF_BATTLE_PVE = 'monster';
 
+    const LEVEL_UP = 5;
 
     const WEAPON = 1;
     const ARMOR = 0;
@@ -661,7 +662,17 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $currentLevel = $level['id'];
 
-        $heroUpdate = $this->heroRepository->update($heroId, ['level_id' => $currentLevel, 'experience' => $experienceAfterBattle]);
+        $updateHeroParams = [
+            'level_id' => $currentLevel,
+            'experience' => $experienceAfterBattle
+        ];
+
+        if ($currentLevel > $hero->getLevelId()) {
+            $newLevelPoints = $hero->getLevelPoints() + self::LEVEL_UP;
+            $updateHeroParams['level_points'] = $newLevelPoints;
+        }
+
+        $heroUpdate = $this->heroRepository->update($heroId, $updateHeroParams);
 
         if (! $heroUpdate) {
             throw new GameException('$hero can not be update');
@@ -875,15 +886,17 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $level = $this->levelRepository->getLevelByExperience([$experienceAfterBattle, $experienceAfterBattle]);
 
-        if (empty($level)) {
-            throw new GameException('Not such level');
-        }
 
         $currentLevel = $level['id'];
 
+        if ($currentLevel < $hero->getLevelId()) {
+            /** @var Level $levelDownExp */
+            $levelDownExp = $this->levelRepository->findOneRowById($hero->getLevelId(), Level::class);
+            $experienceAfterBattle = $levelDownExp->getFromExperience();
+        }
+
         $newHeroData = [
             'hero_status' => 1,
-            'level_id' => $currentLevel,
             'experience' => $experienceAfterBattle,
             'real_health' => $heroHalfFromMaxHP,
         ];

@@ -93,6 +93,11 @@ class GameServices extends AbstractService implements GameServicesInterface
                 'menuItem' => 'Inventory',
                 'controller' => 'inventory',
                 'action' => 'inventory'
+            ],
+            4 => [
+                'menuItem' => 'Level Up',
+                'controller' => 'level',
+                'action' => 'levelUp'
             ]
         ];
 

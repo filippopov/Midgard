@@ -35,6 +35,24 @@ class Hero
 
     private $mana;
 
+    private $level_points;
+
+    /**
+     * @return mixed
+     */
+    public function getLevelPoints()
+    {
+        return $this->level_points;
+    }
+
+    /**
+     * @param mixed $level_points
+     */
+    public function setLevelPoints($level_points)
+    {
+        $this->level_points = $level_points;
+    }
+
     /**
      * @return mixed
      */

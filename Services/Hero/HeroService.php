@@ -290,7 +290,8 @@ class HeroService extends AbstractService implements HeroServiceInterface
             'dexterity' => $dexterity,
             'health' => $health,
             'mana' => $mana,
-            'critical' => $critical
+            'critical' => $critical,
+            'level_points' => 0
         ];
 
         $newHero = $this->heroRepository->create($heroParams);
