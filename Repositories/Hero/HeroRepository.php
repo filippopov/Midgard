@@ -249,7 +249,8 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                   l.to_experience AS experience_to_next_level,
                   toh.name AS hero_type,
                   group_concat(concat(tor.name,' - '), r.amount separator ', ') AS resources,
-                  h.hero_status
+                  h.hero_status,
+                  h.level_points
               FROM 
                   resources AS r
               INNER JOIN 

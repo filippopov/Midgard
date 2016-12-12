@@ -30,13 +30,13 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
 {
     const ITEM_NOT_IN_USE = 0;
 
+    const TYPE_OF_ITEM_ARMOR = 'Armor';
+    const TYPE_OF_ITEM_WEAPON = 'Weapon';
+
     private $view;
     private $authenticationService;
     private $session;
     private $responseService;
-
-    const TYPE_OF_ITEM_ARMOR = 'Armor';
-    const TYPE_OF_ITEM_WEAPON = 'Weapon';
 
     /** @var  ItemsRepository */
     private $itemsRepository;

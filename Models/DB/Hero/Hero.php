@@ -37,6 +37,78 @@ class Hero
 
     private $level_points;
 
+    private $strength;
+
+    private $dexterity;
+
+    private $vitality;
+
+    private $magic;
+
+    /**
+     * @return mixed
+     */
+    public function getStrength()
+    {
+        return $this->strength;
+    }
+
+    /**
+     * @param mixed $strength
+     */
+    public function setStrength($strength)
+    {
+        $this->strength = $strength;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDexterity()
+    {
+        return $this->dexterity;
+    }
+
+    /**
+     * @param mixed $dexterity
+     */
+    public function setDexterity($dexterity)
+    {
+        $this->dexterity = $dexterity;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getVitality()
+    {
+        return $this->vitality;
+    }
+
+    /**
+     * @param mixed $vitality
+     */
+    public function setVitality($vitality)
+    {
+        $this->vitality = $vitality;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMagic()
+    {
+        return $this->magic;
+    }
+
+    /**
+     * @param mixed $magic
+     */
+    public function setMagic($magic)
+    {
+        $this->magic = $magic;
+    }
+
     /**
      * @return mixed
      */

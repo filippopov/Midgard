@@ -104,5 +104,7 @@ $app->registerDependency(\FPopov\Repositories\TypeMonsters\TypeMonstersRepositor
 $app->registerDependency(\FPopov\Repositories\Monsters\MonstersRepositoryInterface::class, \FPopov\Repositories\Monsters\MonstersRepository::class);
 $app->registerDependency(\FPopov\Repositories\Battle\BattleRepositoryInterface::class, \FPopov\Repositories\Battle\BattleRepository::class);
 $app->registerDependency(\FPopov\Services\Inventory\InventoryServiceInterface::class, \FPopov\Services\Inventory\InventoryService::class);
+$app->registerDependency(\FPopov\Services\Level\LevelServiceInterface::class, \FPopov\Services\Level\LevelService::class);
+
 
 $app->start();
