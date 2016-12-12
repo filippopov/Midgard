@@ -12,4 +12,10 @@ namespace FPopov\Services\Inventory;
 interface InventoryServiceInterface
 {
     public function inventory($params = []);
+
+    public function equippedItem($itemId);
+
+    public function removeItem($itemId);
+
+    public function alreadyInUse($itemId);
 }

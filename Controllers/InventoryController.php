@@ -9,6 +9,7 @@
 namespace FPopov\Controllers;
 
 
+use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
 use FPopov\Services\Application\AuthenticationServiceInterface;
@@ -55,5 +56,59 @@ class InventoryController
 
         $params = ['model' => $allItemsForOneHero];
         $this->view->render($params);
+    }
+
+    public function removeItem()
+    {
+        $itemId = $this->MVCContext->getOneGetParam('itemId');
+        $result = $this->inventoryService->removeItem($itemId);
+
+        return $result;
+    }
+
+    public function equippedItem($itemId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+
+        $result = $this->inventoryService->equippedItem($itemId);
+
+        $this->responseService->redirect('inventory', 'inventory');
+    }
+
+    public function alreadyInUse($itemId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $result = $this->inventoryService->alreadyInUse($itemId);
+
+        $this->responseService->redirect('inventory', 'inventory');
+    }
+
+    public function youCanUseThisItem()
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        Message::postMessage('You can use this item', Message::NEGATIVE_MESSAGE);
+
+        $this->responseService->redirect('inventory', 'inventory');
     }
 }

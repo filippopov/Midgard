@@ -161,7 +161,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
                 'type' => self::TYPE_DATA
             ],
             'actions' => array(
-                'title' => 'Actions',
+                'title' => 'Delete',
                 'type' => self::TYPE_ACTIONS,
                 'values' => array(
                     'delete' => function  ($row) {

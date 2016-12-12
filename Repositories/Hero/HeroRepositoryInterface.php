@@ -20,4 +20,6 @@ interface HeroRepositoryInterface
     public function changeStatusOfHeroes($params = []);
 
     public function heroInformation($params = []);
+
+    public function getTypeOfHeroById($params = []);
 }

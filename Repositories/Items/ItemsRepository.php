@@ -65,12 +65,13 @@ class ItemsRepository extends AbstractRepository implements ItemsRepositoryInter
                   THEN
                       \'Only Marksmen\'
                   WHEN
-                      toi.for_type_of_heroes = 2
+                      toi.for_type_of_heroes = 3
                   THEN
                       \'Only Wizard\'
                   ELSE
                     \'For all type of heroes\'
-            END  AS for_type_hero'
+            END  AS for_type_hero',
+            'toi.for_type_of_heroes'
         ];
 
         $searchFields = [
@@ -150,5 +151,81 @@ class ItemsRepository extends AbstractRepository implements ItemsRepositoryInter
         $result = $this->getAllItemsForOneHero($params);
 
         return isset($result[0]) ? $result[0]['count'] : 0;
+    }
+
+    public function getItemTypes($params = [])
+    {
+        $query = "
+            SELECT
+                toi.weapon_or_armor,
+                toi.id AS type_of_item_id
+            FROM 
+                items AS i
+            INNER JOIN 
+                type_of_items AS toi ON (i.type_of_item_id = toi.id)
+            WHERE
+                i.id = ?
+            LIMIT 1  
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        $stmt->execute($params);
+
+        return $stmt->fetch();
+    }
+
+    public function updateItemToNotEquiped($params = [])
+    {
+        $query = "
+            UPDATE
+                items AS i
+            SET
+                i.is_equiped = 0
+            WHERE
+                type_of_item_id = ?
+                AND i.hero_id = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        return $stmt->execute($params);
+    }
+
+    public function getWeaponsId($params = [])
+    {
+        $query = "
+            SELECT
+                group_concat(i.id) AS items_id
+            FROM 
+                items AS i
+            INNER JOIN 
+                type_of_items AS toi ON (i.type_of_item_id = toi.id)
+            WHERE 
+                i.hero_id = ?
+                AND toi.weapon_or_armor = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+
+        return $stmt->fetch();
+    }
+
+    public function unEqupedWeapons($params = [])
+    {
+        $query = "
+            UPDATE
+                items AS i
+            SET
+                i.is_equiped = 0
+            WHERE
+                i.id IN (" . $params[0] . ")
+        ";
+
+
+        $stmt = $this->db->prepare($query);
+
+        return $stmt->execute();
     }
 }

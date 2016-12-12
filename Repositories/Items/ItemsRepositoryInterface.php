@@ -14,4 +14,10 @@ interface ItemsRepositoryInterface
     public function getAllItemsForOneHero($params = []);
 
     public function getAllItemsForOneHeroCount($params = []);
+
+    public function getItemTypes($params = []);
+
+    public function getWeaponsId($params = []);
+
+    public function unEqupedWeapons($params = []);
 }

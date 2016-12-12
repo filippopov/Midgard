@@ -188,10 +188,38 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                       ELSE 
                         h.armor + ei.armor
                   END  AS armor,
-                  h.strength,
-                  h.magic,
-                  h.vitality,
-                  h.dexterity,
+                  CASE 
+                      WHEN 
+                          ei.strength IS NULL OR ei.strength = '' 
+                      THEN 
+                          h.strength 
+                      ELSE 
+                        h.strength + ei.strength
+                  END  AS strength,
+                  CASE 
+                      WHEN 
+                          ei.magic IS NULL OR ei.magic = '' 
+                      THEN 
+                          h.magic 
+                      ELSE 
+                        h.magic + ei.magic
+                  END  AS magic,
+                  CASE 
+                      WHEN 
+                          ei.vitality IS NULL OR ei.vitality = '' 
+                      THEN 
+                          h.vitality 
+                      ELSE 
+                        h.vitality + ei.vitality
+                  END  AS vitality,
+                  CASE 
+                      WHEN 
+                          ei.dexterity IS NULL OR ei.dexterity = '' 
+                      THEN 
+                          h.dexterity 
+                      ELSE 
+                        h.dexterity + ei.dexterity
+                  END  AS dexterity,
                   CASE 
                       WHEN 
                           ei.health IS NULL OR ei.health = '' 
@@ -239,10 +267,10 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
                       SUM(ceil(i.damage_low_value + (i.strength/2))) AS damage_low_value,
                       SUM(ceil(i.damage_high_value + (i.strength/2))) AS damage_high_value,
                       SUM(i.armor + (i.dexterity * 2)) AS armor,
-                      SUM(i.strength),
-                      SUM(i.vitality),
-                      SUM(i.magic),
-                      SUM(i.dexterity),
+                      SUM(i.strength) AS strength,
+                      SUM(i.vitality) AS vitality,
+                      SUM(i.magic) AS magic,
+                      SUM(i.dexterity) AS dexterity,
                       SUM(i.health + (i.vitality * 10)) AS health,
                       SUM(i.mana + (i.magic * 10)) AS mana,
                       i.hero_id,
@@ -263,5 +291,26 @@ class HeroRepository extends AbstractRepository implements HeroRepositoryInterfa
         $stmt->execute($params);
 
         return $stmt->fetchObject(HeroStatistic::class);
+    }
+
+    public function getTypeOfHeroById($params = [])
+    {
+        $query = "
+            SELECT 
+                toh.name AS type_of_hero
+            FROM 
+                heroes AS h 
+            INNER JOIN 
+                type_of_heroes AS toh ON (h.type_of_heroes_id = toh.id)
+            WHERE 
+                h.id = ?
+            LIMIT 1;   
+        ";
+
+        $stmt = $this->db->prepare($query);
+
+        $stmt->execute($params);
+
+        return $stmt->fetch();
     }
 }
