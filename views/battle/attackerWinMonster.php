@@ -13,6 +13,7 @@ $monsterId = isset($monsterId) ? $monsterId : 0;
         <h2>Reward</h2>
         <div><strong>Experience: </strong><?php echo $model->getExperience()?></div>
         <div><strong>Gold: </strong><?php echo $model->getGold()?></div>
+        <div><strong>Resources <?php echo $model->getTypeResources()?>: </strong><?php echo $model->getAmountResources()?></div>
         <div><strong>Item Name: </strong><?php echo $model->getItemName()?></div>
         <br>
         <ul class="nav nav-pills">

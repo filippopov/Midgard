@@ -652,6 +652,11 @@ class BattleService extends AbstractService implements BattleServiceInterface
 
         $item = $this->generateItem();
 
+        $newResources = $this->generateNewResources();
+
+        $amountNewResources = isset($newResources['amount']) ? $newResources['amount'] : 0;
+        $typeNewResources = isset($newResources['resources']) ? $newResources['resources'] : '';
+
         $experienceAfterBattle = $hero->getExperience() + $monsterInformation->getWinExperience();
 
         $level = $this->levelRepository->getLevelByExperience([$experienceAfterBattle, $experienceAfterBattle]);
@@ -706,7 +711,9 @@ class BattleService extends AbstractService implements BattleServiceInterface
             'monsterType' => $monsterInformation->getMonsterType(),
             'gold' => $goldFromMonster,
             'experience' => $monsterInformation->getWinExperience(),
-            'itemName' => $item
+            'itemName' => $item,
+            'amountResources' => $amountNewResources,
+            'typeResources' => $typeNewResources
         ];
 
         return $informationForReturn;
@@ -976,6 +983,42 @@ class BattleService extends AbstractService implements BattleServiceInterface
         }
 
         return $itemName;
+    }
+
+    private function generateNewResources()
+    {
+        $typeOfResources = $this->typeOfResourcesRepository->getTypeOfItemsWithoutGold([HeroService::RESOURCES_COLD, HeroService::RESOURCES_HONOR]);
+
+        $randomResources = $typeOfResources[array_rand($typeOfResources)];
+
+        $idRandomResources = isset($randomResources['type_of_resources_id']) ? $randomResources['type_of_resources_id'] : 0;
+
+        if (! $idRandomResources) {
+            throw new GameException('Not set resources');
+        }
+
+        /** @var TypeOfResources $typeResources */
+        $typeResources = $this->typeOfResourcesRepository->findOneRowById($idRandomResources, TypeOfResources::class);
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        $randAmount = rand(1, 5);
+
+        /** @var Resources[] $resources */
+        $resources = $this->resourcesRepository->findByCondition(['type_of_resources_id' => $typeResources->getId(), 'heroes_id' => $heroId], Resources::class);
+
+        $amount = $resources[0]->getAmount() + $randAmount;
+
+        $newResources = $this->resourcesRepository->update($resources[0]->getId(), ['amount' => $amount]);
+
+        if (! $newResources) {
+            throw new GameException('Can not update row');
+        }
+
+        return [
+            'amount' => $randAmount,
+            'resources' => $typeResources->getName()
+        ];
     }
 }
 

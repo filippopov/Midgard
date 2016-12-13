@@ -11,5 +11,5 @@ namespace FPopov\Repositories\TypeOfResources;
 
 interface TypeOfResourcesRepositoryInterface
 {
-
+    public function getTypeOfItemsWithoutGold($params = []);
 }

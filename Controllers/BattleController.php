@@ -322,8 +322,10 @@ class BattleController
         $gold = isset($informationAfterBattle['gold']) ? $informationAfterBattle['gold'] : '';
         $experience = isset($informationAfterBattle['experience']) ? $informationAfterBattle['experience'] : '';
         $itemName = isset($informationAfterBattle['itemName']) ? $informationAfterBattle['itemName'] : '';
+        $amountResources = isset($informationAfterBattle['amountResources']) ? $informationAfterBattle['amountResources'] : '';
+        $typeResources = isset($informationAfterBattle['typeResources']) ? $informationAfterBattle['typeResources'] : '';
 
-        $returnModel = new BattleHeroWinMonsterViewModel($monsterType, $gold, $experience, $itemName);
+        $returnModel = new BattleHeroWinMonsterViewModel($monsterType, $gold, $experience, $itemName, $amountResources, $typeResources);
 
         $this->view->render(['model' => $returnModel]);
     }

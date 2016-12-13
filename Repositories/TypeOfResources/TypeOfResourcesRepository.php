@@ -29,4 +29,22 @@ class TypeOfResourcesRepository extends AbstractRepository implements TypeOfReso
             'primaryKeyName' => 'id'
         ];
     }
+
+    public function getTypeOfItemsWithoutGold($params = [])
+    {
+        $query = "
+            SELECT 
+                tor.id AS type_of_resources_id 
+            FROM 
+                type_of_resources AS tor
+            WHERE 
+                tor.name != ?
+                AND tor.name != ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll();
+    }
 }
