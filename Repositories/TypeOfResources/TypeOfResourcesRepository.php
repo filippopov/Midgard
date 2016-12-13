@@ -47,4 +47,5 @@ class TypeOfResourcesRepository extends AbstractRepository implements TypeOfReso
 
         return $stmt->fetchAll();
     }
+
 }

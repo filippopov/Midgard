@@ -432,7 +432,7 @@ class HeroService extends AbstractService implements HeroServiceInterface
             $paramsResources = [
                 'type_of_resources_id' => $typeOfResource->getId(),
                 'heroes_id' => $newHeroId,
-                'amount' => 0
+                'amount' => 1
             ];
             if ($typeOfResource->getName() == self::RESOURCES_COLD) {
                 $paramsResources['amount'] = 1000;

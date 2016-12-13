@@ -107,7 +107,7 @@ class InventoryController
             $this->responseService->redirect('heroes', 'createHero');
         }
 
-        Message::postMessage('You can use this item', Message::NEGATIVE_MESSAGE);
+        Message::postMessage('You can not use this item', Message::NEGATIVE_MESSAGE);
 
         $this->responseService->redirect('inventory', 'inventory');
     }
