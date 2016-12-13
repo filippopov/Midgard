@@ -30,7 +30,6 @@ class TypeOfRecipesRepository extends AbstractRepository implements TypeOfRecipe
         ];
     }
 
-
     public function getAllRecipes($params = [])
     {
         $listOfFields = [
