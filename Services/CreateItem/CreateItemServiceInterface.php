@@ -12,4 +12,10 @@ namespace FPopov\Services\CreateItem;
 interface CreateItemServiceInterface
 {
     public function showRecipes($params = []);
+
+    public function createItem($recipeId);
+
+    public function startItem($typeOfRecipesId);
+
+    public function takeItem($typeOfRecipesId);
 }

@@ -11,6 +11,7 @@ namespace FPopov\Controllers;
 
 use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
+use FPopov\Models\View\CreateItem\CreateItemViewModel;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
 use FPopov\Services\CreateItem\CreateItemServiceInterface;
@@ -53,5 +54,59 @@ class CreateItemController
 
         $params = ['model' => $allRecipes];
         $this->view->render($params);
+    }
+
+    public function createItem($recipeId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $createItemStatus = $this->createItemService->createItem($recipeId);
+
+        $typeOfRecipesId = isset($createItemStatus['typeOfRecipesId']) ? $createItemStatus['typeOfRecipesId'] : '';
+        $status = isset($createItemStatus['status']) ? $createItemStatus['status'] : '';
+        $name = isset($createItemStatus['name']) ? $createItemStatus['name'] : '';
+        $duration = isset($createItemStatus['duration']) ? $createItemStatus['duration'] : '';
+        $timeToCreateItem = isset($createItemStatus['timeToCreateItem']) ? $createItemStatus['timeToCreateItem'] : 0;
+
+
+        $model = new CreateItemViewModel($typeOfRecipesId, $status, $name, $duration, $timeToCreateItem);
+
+        $this->view->render(['model' => $model]);
+    }
+
+    public function startItem($typeOfRecipesId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $startItem = $this->createItemService->startItem($typeOfRecipesId);
+
+        $this->responseService->redirect('createItem', 'createItem', ['recipeId' => $typeOfRecipesId]);
+    }
+
+    public function takeItem($typeOfRecipesId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $takeItem = $this->createItemService->takeItem($typeOfRecipesId);
+
+        $this->responseService->redirect('createItem', 'createItem', ['recipeId' => $typeOfRecipesId]);
     }
 }

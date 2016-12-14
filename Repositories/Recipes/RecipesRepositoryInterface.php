@@ -11,5 +11,7 @@ namespace FPopov\Repositories\Recipes;
 
 interface RecipesRepositoryInterface
 {
+    public function checkEnoughResources($params = []);
 
+    public function getAllTypeOfResourceForOneUserWithoutHonor($params =[]);
 }
