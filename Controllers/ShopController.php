@@ -74,6 +74,16 @@ class ShopController
 
     public function cancelItemFromAction($shopItemId)
     {
-        dd($shopItemId);
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $cancelItem = $this->shopService->cancelItemFromAction($shopItemId);
+
+        $this->responseService->redirect('shop', 'shopItems', ['typeOfShop' => $cancelItem]);
     }
 }

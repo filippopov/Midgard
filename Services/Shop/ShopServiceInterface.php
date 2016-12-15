@@ -14,4 +14,6 @@ interface ShopServiceInterface
     public function shopItems($params = []);
 
     public function byeItem($shopItemId);
+
+    public function cancelItemFromAction($shopItemId);
 }

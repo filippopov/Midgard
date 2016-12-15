@@ -433,6 +433,61 @@ class ShopService extends AbstractService implements ShopServiceInterface
 
         return $shopType;
     }
+
+    public function cancelItemFromAction($shopItemId)
+    {
+        if (! $shopItemId) {
+            throw new GameException('Not set shop id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero id');
+        }
+
+        /** @var Shop $shopItem */
+        $shopItem = $this->shopRepository->findOneRowById($shopItemId, Shop::class);
+
+        $shopStatusMapper = [
+            0 => self::GOLD_SHOP,
+            1 => self::HONOR_SHOP,
+            2 => self::AUCTION_SHOP
+        ];
+
+        $shopType = $shopStatusMapper[$shopItem->getShopStatus()];
+
+        $itemParams = [
+            'damage_low_value' => $shopItem->getDamageLowValue(),
+            'damage_high_value' => $shopItem->getDamageHighValue(),
+            'armor' => $shopItem->getArmor(),
+            'strength' => $shopItem->getStrength(),
+            'vitality' => $shopItem->getVitality(),
+            'magic' => $shopItem->getMagic(),
+            'dexterity' => $shopItem->getDexterity(),
+            'health' => $shopItem->getHealth(),
+            'mana' => $shopItem->getMana(),
+            'type_of_item_id' => $shopItem->getTypeOfItemId(),
+            'hero_id' => $heroId,
+            'item_level' => $shopItem->getItemLevel(),
+            'is_equiped' => 0,
+            'critical' => $shopItem->getCritical(),
+            'name' => $shopItem->getName()
+        ];
+
+        $createItem = $this->itemsRepository->create($itemParams);
+
+        if (! $createItem) {
+            throw new GameException('Can not create item row');
+        }
+
+        $deleteItemFromShop = $this->shopRepository->delete($shopItemId);
+
+        if (! $deleteItemFromShop) {
+            throw new GameException('Can not delete shop row');
+        }
+
+        Message::postMessage('Stop selling this item', Message::POSITIVE_MESSAGE);
+        return $shopType;
+    }
 }
-
-
