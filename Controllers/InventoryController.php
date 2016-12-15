@@ -12,6 +12,8 @@ namespace FPopov\Controllers;
 use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\MVCContext;
 use FPopov\Core\ViewInterface;
+use FPopov\Models\Binding\Inventory\SellItemBindingModel;
+use FPopov\Models\View\Inventory\SellItemViewModel;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
 use FPopov\Services\Inventory\InventoryService;
@@ -108,6 +110,39 @@ class InventoryController
         }
 
         Message::postMessage('You can not use this item', Message::NEGATIVE_MESSAGE);
+
+        $this->responseService->redirect('inventory', 'inventory');
+    }
+
+    public function sellItem($itemId)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $model = new SellItemViewModel($itemId);
+
+        $this->view->render(['model' => $model]);
+    }
+
+    public function sellItemPost(SellItemBindingModel $model)
+    {
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $itemId = $model->getItemId();
+        $price = $model->getPrice();
+
+        $result = $this->inventoryService->sellItemPost($itemId, $price);
 
         $this->responseService->redirect('inventory', 'inventory');
     }

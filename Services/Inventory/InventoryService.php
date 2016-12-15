@@ -13,11 +13,14 @@ use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\SessionInterface;
 use FPopov\Core\ViewInterface;
 use FPopov\Exceptions\GameException;
+use FPopov\Models\DB\Items\Item;
 use FPopov\Models\DB\TypeOfItems\TypeOfItem;
 use FPopov\Repositories\Hero\HeroRepository;
 use FPopov\Repositories\Hero\HeroRepositoryInterface;
 use FPopov\Repositories\Items\ItemsRepository;
 use FPopov\Repositories\Items\ItemsRepositoryInterface;
+use FPopov\Repositories\Shop\ShopRepository;
+use FPopov\Repositories\Shop\ShopRepositoryInterface;
 use FPopov\Repositories\TypeOfItems\TypeOfItemsRepository;
 use FPopov\Repositories\TypeOfItems\TypeOfItemsRepositoryInterface;
 use FPopov\Services\AbstractService;
@@ -47,6 +50,9 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
     /** @var  HeroRepository */
     private $heroRepository;
 
+    /** @var  ShopRepository */
+    private $shopRepository;
+
     public function __construct(
         ViewInterface $view,
         AuthenticationServiceInterface $authenticationService,
@@ -54,7 +60,8 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
         ResponseServiceInterface $responseService,
         ItemsRepositoryInterface $itemsRepository,
         TypeOfItemsRepositoryInterface $typeOfItemsRepository,
-        HeroRepositoryInterface $heroRepository
+        HeroRepositoryInterface $heroRepository,
+        ShopRepositoryInterface $shopRepository
     )
     {
         $this->view = $view;
@@ -64,7 +71,7 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
         $this->itemsRepository = $itemsRepository;
         $this->typeOfItemsRepository = $typeOfItemsRepository;
         $this->heroRepository = $heroRepository;
-
+        $this->shopRepository = $shopRepository;
     }
 
     public function inventory($params = [])
@@ -161,6 +168,16 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
                     }
                 )
             ),
+            'sell_item' => [
+                'title' => 'Sell Item',
+                'type' => self::TYPE_DATA,
+                'value' => function ($value) {
+                    return 'Sell Item';
+                },
+                'onClick' => function ($row) use ($canYouUse){
+                    return  $this->view->uri('inventory', 'sellItem', ['itemId' => $row['id']]);
+                }
+            ],
             'is_equiped' => [
                 'title' => 'Equipped',
                 'type' => self::TYPE_DATA,
@@ -280,4 +297,61 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
         Message::postMessage('Successfully remove item from hero', Message::POSITIVE_MESSAGE);
         return true;
     }
+
+    public function sellItemPost($itemId, $price)
+    {
+        if ((int) $price == 0) {
+            Message::postMessage('Please set price', Message::NEGATIVE_MESSAGE);
+            return false;
+        }
+
+        if (empty($itemId)) {
+            throw new GameException('Not set item id');
+        }
+
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero id');
+        }
+
+        /** @var Item $item */
+        $item = $this->itemsRepository->findOneRowById($itemId, Item::class);
+
+        $shopItemParams = [
+            'name' => $item->getName(),
+            'damage_low_value' => $item->getDamageLowValue(),
+            'damage_high_value' => $item->getDamageHighValue(),
+            'armor' => $item->getArmor(),
+            'strength' => $item->getStrength(),
+            'vitality' => $item->getVitality(),
+            'magic' => $item->getMagic(),
+            'dexterity' => $item->getDexterity(),
+            'health' => $item->getHealth(),
+            'mana' => $item->getMana(),
+            'type_of_item_id' => $item->getTypeOfItemId(),
+            'item_level' => $item->getItemLevel(),
+            'critical' => $item->getCritical(),
+            'shop_status' => 2,
+            'price' => (int) $price,
+            'hero_id' => $heroId
+        ];
+
+        $sendToShopItem = $this->shopRepository->create($shopItemParams);
+
+        if (! $sendToShopItem) {
+            throw new GameException('Can not create shop row');
+        }
+
+        $deleteItem = $this->itemsRepository->delete($itemId);
+
+        if (! $deleteItem) {
+            throw new GameException('Can not delete item');
+        }
+
+        Message::postMessage('Succesfully send item to auction', Message::POSITIVE_MESSAGE);
+        return true;
+    }
 }
+
+

@@ -18,4 +18,6 @@ interface InventoryServiceInterface
     public function removeItem($itemId);
 
     public function alreadyInUse($itemId);
+
+    public function sellItemPost($itemId, $price);
 }
