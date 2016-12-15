@@ -14,4 +14,6 @@ interface RecipesRepositoryInterface
     public function checkEnoughResources($params = []);
 
     public function getAllTypeOfResourceForOneUserWithoutHonor($params =[]);
+
+    public function getResourcesAmountByHeroIdAndName($params = []);
 }

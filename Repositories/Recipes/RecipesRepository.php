@@ -79,4 +79,25 @@ class RecipesRepository extends AbstractRepository implements RecipesRepositoryI
 
         return $stmt->fetchAll();
     }
+
+    public function getResourcesAmountByHeroIdAndName($params = [])
+    {
+        $query = "
+            SELECT
+                r.amount,
+                r.id
+            FROM
+                resources AS r
+            INNER JOIN
+                type_of_resources AS tor ON (r.type_of_resources_id = tor.id)
+            WHERE
+                r.heroes_id = ?
+                AND tor.name = ?
+        ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->execute($params);
+
+        return $stmt->fetch();
+    }
 }

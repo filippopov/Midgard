@@ -69,7 +69,7 @@ class ShopController
 
         $byeItem = $this->shopService->byeItem($shopItemId);
 
-        $this->responseService->redirect('shop', 'shopItems', ['typeOfShop' => '']);
+        $this->responseService->redirect('shop', 'shopItems', ['typeOfShop' => $byeItem]);
     }
 
     public function cancelItemFromAction($shopItemId)

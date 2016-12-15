@@ -9,10 +9,18 @@
 namespace FPopov\Services\Shop;
 
 
+use FPopov\Core\MVC\Message;
 use FPopov\Core\MVC\SessionInterface;
 use FPopov\Core\ViewInterface;
 use FPopov\Exceptions\GameException;
+use FPopov\Models\DB\Shop\Shop;
 use FPopov\Models\DB\TypeOfItems\TypeOfItem;
+use FPopov\Repositories\Items\ItemsRepository;
+use FPopov\Repositories\Items\ItemsRepositoryInterface;
+use FPopov\Repositories\Recipes\RecipesRepository;
+use FPopov\Repositories\Recipes\RecipesRepositoryInterface;
+use FPopov\Repositories\Resources\ResourcesRepository;
+use FPopov\Repositories\Resources\ResourcesRepositoryInterface;
 use FPopov\Repositories\Shop\ShopRepository;
 use FPopov\Repositories\Shop\ShopRepositoryInterface;
 use FPopov\Repositories\TypeOfItems\TypeOfItemsRepository;
@@ -20,6 +28,8 @@ use FPopov\Repositories\TypeOfItems\TypeOfItemsRepositoryInterface;
 use FPopov\Services\AbstractService;
 use FPopov\Services\Application\AuthenticationServiceInterface;
 use FPopov\Services\Application\ResponseServiceInterface;
+use FPopov\Services\CreateItem\CreateItemService;
+use FPopov\Services\Hero\HeroService;
 
 class ShopService extends AbstractService implements ShopServiceInterface
 {
@@ -38,13 +48,25 @@ class ShopService extends AbstractService implements ShopServiceInterface
     /** @var  TypeOfItemsRepository */
     private $typeOfItemsRepository;
 
+    /** @var  RecipesRepository */
+    private $recipesRepository;
+
+    /** @var  ResourcesRepository */
+    private $resourcesRepository;
+
+    /** @var  ItemsRepository */
+    private $itemsRepository;
+
     public function __construct(
         ViewInterface $view,
         AuthenticationServiceInterface $authenticationService,
         SessionInterface $session,
         ResponseServiceInterface $responseService,
         ShopRepositoryInterface $shopRepository,
-        TypeOfItemsRepositoryInterface $typeOfItemsRepository
+        TypeOfItemsRepositoryInterface $typeOfItemsRepository,
+        RecipesRepositoryInterface $recipesRepository,
+        ResourcesRepositoryInterface $resourcesRepository,
+        ItemsRepositoryInterface $itemsRepository
     )
     {
         $this->view = $view;
@@ -53,6 +75,9 @@ class ShopService extends AbstractService implements ShopServiceInterface
         $this->responseService = $responseService;
         $this->shopRepository = $shopRepository;
         $this->typeOfItemsRepository = $typeOfItemsRepository;
+        $this->recipesRepository = $recipesRepository;
+        $this->resourcesRepository = $resourcesRepository;
+        $this->itemsRepository = $itemsRepository;
     }
 
     public function shopItems($params = [])
@@ -217,7 +242,197 @@ class ShopService extends AbstractService implements ShopServiceInterface
             throw new GameException('Not set shop id');
         }
 
-        $shopItem = $this->shopRepository->findOneRowById($shopItemId);
-        dd($shopItem);
+        /** @var Shop $shopItem */
+        $shopItem = $this->shopRepository->findOneRowById($shopItemId, Shop::class);
+
+        $shopStatusMapper = [
+            0 => self::GOLD_SHOP,
+            1 => self::HONOR_SHOP,
+            2 => self::AUCTION_SHOP
+        ];
+
+        $shopType = $shopStatusMapper[$shopItem->getShopStatus()];
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero id');
+        }
+
+        $itemParams = [
+            'damage_low_value' => $shopItem->getDamageLowValue(),
+            'damage_high_value' => $shopItem->getDamageHighValue(),
+            'armor' => $shopItem->getArmor(),
+            'strength' => $shopItem->getStrength(),
+            'vitality' => $shopItem->getVitality(),
+            'magic' => $shopItem->getMagic(),
+            'dexterity' => $shopItem->getDexterity(),
+            'health' => $shopItem->getHealth(),
+            'mana' => $shopItem->getMana(),
+            'type_of_item_id' => $shopItem->getTypeOfItemId(),
+            'hero_id' => $heroId,
+            'item_level' => $shopItem->getItemLevel(),
+            'is_equiped' => 0,
+            'critical' => $shopItem->getCritical(),
+            'name' => $shopItem->getName()
+        ];
+
+        switch ($shopType) {
+            case self::GOLD_SHOP :
+                $goldParams = [
+                    $shopItem->getPrice(),
+                    $shopItem->getPrice(),
+                    $heroId,
+                    HeroService::RESOURCES_COLD
+                ];
+
+                $checkIsEnoughGold = $this->recipesRepository->checkEnoughResources($goldParams);
+
+                if ($checkIsEnoughGold['is_enogh'] == CreateItemService::ENOUGH_RESOURCE) {
+                    $myResourcesParams = [
+                        $heroId,
+                        HeroService::RESOURCES_COLD
+                    ];
+                    $myNeedResources = $this->recipesRepository->getResourcesAmountByHeroIdAndName($myResourcesParams);
+
+                    $reduceAmountResourcesGold = $myNeedResources['amount'] - $shopItem->getPrice();
+
+                    $updateResources = $this->resourcesRepository->update($myNeedResources['id'], ['amount' => $reduceAmountResourcesGold]);
+
+                    if (! $updateResources) {
+                        throw new GameException('Can not update resources');
+                    }
+
+                    $addItemToInventory = $this->itemsRepository->create($itemParams);
+
+                    if (! $addItemToInventory) {
+                        throw new GameException('Can not add item to inventory');
+                    }
+
+                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    return $shopType;
+                } else {
+                    Message::postMessage("You are need {$checkIsEnoughGold['is_enogh']} Gold, to bye this item", Message::NEGATIVE_MESSAGE);
+                    return $shopType;
+                }
+
+                break;
+            case self::HONOR_SHOP :
+
+                $honorParams = [
+                    $shopItem->getPrice(),
+                    $shopItem->getPrice(),
+                    $heroId,
+                    HeroService::RESOURCES_HONOR
+                ];
+
+                $checkIsEnoughHonor = $this->recipesRepository->checkEnoughResources($honorParams);
+
+                if ($checkIsEnoughHonor['is_enogh'] == CreateItemService::ENOUGH_RESOURCE) {
+
+                    $myResourcesParams = [
+                        $heroId,
+                        HeroService::RESOURCES_HONOR
+                    ];
+                    $myNeedResources = $this->recipesRepository->getResourcesAmountByHeroIdAndName($myResourcesParams);
+
+                    $reduceAmountResourcesHonor = $myNeedResources['amount'] - $shopItem->getPrice();
+
+                    $updateResources = $this->resourcesRepository->update($myNeedResources['id'], ['amount' => $reduceAmountResourcesHonor]);
+
+                    if (! $updateResources) {
+                        throw new GameException('Can not update resources');
+                    }
+
+                    $addItemToInventory = $this->itemsRepository->create($itemParams);
+
+                    if (! $addItemToInventory) {
+                        throw new GameException('Can not add item to inventory');
+                    }
+
+                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    return $shopType;
+
+                } else {
+                    Message::postMessage("You are need {$checkIsEnoughHonor['is_enogh']} Honor, to bye this item", Message::NEGATIVE_MESSAGE);
+                    return $shopType;
+                }
+
+                break;
+            case self::AUCTION_SHOP :
+                $sellerId = $shopItem->getHeroId();
+
+                if ($heroId == $sellerId) {
+                    Message::postMessage("This item is yours", Message::NEGATIVE_MESSAGE);
+                    return $shopType;
+                }
+
+                $goldParams = [
+                    $shopItem->getPrice(),
+                    $shopItem->getPrice(),
+                    $heroId,
+                    HeroService::RESOURCES_COLD
+                ];
+
+                $checkIsEnoughGold = $this->recipesRepository->checkEnoughResources($goldParams);
+
+                if ($checkIsEnoughGold['is_enogh'] == CreateItemService::ENOUGH_RESOURCE) {
+                    $myResourcesParams = [
+                        $heroId,
+                        HeroService::RESOURCES_COLD
+                    ];
+                    $myNeedResources = $this->recipesRepository->getResourcesAmountByHeroIdAndName($myResourcesParams);
+
+                    $reduceAmountResourcesGold = $myNeedResources['amount'] - $shopItem->getPrice();
+
+                    $updateResources = $this->resourcesRepository->update($myNeedResources['id'], ['amount' => $reduceAmountResourcesGold]);
+
+                    if (! $updateResources) {
+                        throw new GameException('Can not update resources');
+                    }
+
+                    $addItemToInventory = $this->itemsRepository->create($itemParams);
+
+                    if (! $addItemToInventory) {
+                        throw new GameException('Can not add item to inventory');
+                    }
+
+                    if (! $sellerId) {
+                        throw new GameException('Can not find seller');
+                    }
+
+                    $sellerResourcesParams = [
+                        $sellerId,
+                        HeroService::RESOURCES_COLD
+                    ];
+
+                    $sellerGold = $this->recipesRepository->getResourcesAmountByHeroIdAndName($sellerResourcesParams);
+
+                    $addAmountGold = $sellerGold['amount'] + $shopItem->getPrice();
+
+                    $updateResources = $this->resourcesRepository->update($sellerGold['id'], ['amount' => $addAmountGold]);
+
+                    if (! $updateResources) {
+                        throw new GameException('Can not update resources');
+                    }
+
+                    $deleteShopItem = $this->shopRepository->delete($shopItem->getId());
+
+                    if (! $deleteShopItem) {
+                        throw new GameException('Can not delete item from shop');
+                    }
+
+                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    return $shopType;
+                } else {
+                    Message::postMessage("You are need {$checkIsEnoughGold['is_enogh']} Gold, to bye this item", Message::NEGATIVE_MESSAGE);
+                    return $shopType;
+                }
+
+                break;
+        }
+
+        return $shopType;
     }
 }
+
+
