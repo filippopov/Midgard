@@ -108,6 +108,8 @@ $app->registerDependency(\FPopov\Services\Level\LevelServiceInterface::class, \F
 $app->registerDependency(\FPopov\Repositories\TypeOfRecipes\TypeOfRecipesRepositoryInterface::class, \FPopov\Repositories\TypeOfRecipes\TypeOfRecipesRepository::class);
 $app->registerDependency(\FPopov\Repositories\Recipes\RecipesRepositoryInterface::class, \FPopov\Repositories\Recipes\RecipesRepository::class);
 $app->registerDependency(\FPopov\Services\CreateItem\CreateItemServiceInterface::class, \FPopov\Services\CreateItem\CreateItemService::class);
+$app->registerDependency(\FPopov\Repositories\Shop\ShopRepositoryInterface::class, \FPopov\Repositories\Shop\ShopRepository::class);
+$app->registerDependency(\FPopov\Services\Shop\ShopServiceInterface::class, \FPopov\Services\Shop\ShopService::class);
 
 
 $app->start();

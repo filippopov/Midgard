@@ -103,6 +103,24 @@ class GameServices extends AbstractService implements GameServicesInterface
                 'menuItem' => 'Create Item',
                 'controller' => 'createItem',
                 'action' => 'showRecipes'
+            ],
+            6 => [
+                'menuItem' => 'Shop',
+                'controller' => 'shop',
+                'action' => 'shopItems',
+                'params' => 'gold'
+            ],
+            7 => [
+                'menuItem' => 'Shop Honor',
+                'controller' => 'shop',
+                'action' => 'shopItems',
+                'params' => 'honor'
+            ],
+            8 => [
+                'menuItem' => 'Auction House',
+                'controller' => 'shop',
+                'action' => 'shopItems',
+                'params' => 'auction'
             ]
         ];
 
@@ -111,7 +129,7 @@ class GameServices extends AbstractService implements GameServicesInterface
                 'title' => 'Menu',
                 'type' => self::TYPE_DATA,
                 'onClick' => function ($row) {
-                    return $this->view->uri($row['controller'], $row['action']);
+                    return $this->view->uri($row['controller'], $row['action'], ['data' => isset($row['params']) ? $row['params'] : '']);
                 }
             ]
         ];
