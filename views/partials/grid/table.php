@@ -77,6 +77,9 @@ $aFieldClosure = array(
                 case 'show' :
                     $tmpAction .= ' onclick="show(\'' . $actionUrl .'\')"><i id="button' . $index .'" class="fa fa-folder-open-o" title="Show"></i>';
                     break;
+                case 'money' :
+                    $tmpAction .= ' onclick="createOrUpdate(\'' . $actionUrl .'\')"><i class="fa fa-money" title="Edit"></i>';
+                    break;
             }
             $tmpAction .= '</div>';
 
