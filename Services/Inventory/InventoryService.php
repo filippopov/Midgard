@@ -182,7 +182,7 @@ class InventoryService extends AbstractService implements InventoryServiceInterf
                 'title' => 'Equipped',
                 'type' => self::TYPE_DATA,
                 'value' => function ($value) {
-                    return $value = $value == 1 ? 'Already in use' : 'Equipped item';
+                    return $value = $value == 1 ? 'Already in use' : 'Equip item';
                 },
                 'onClick' => function ($row) use ($canYouUse){
                     if ($row['for_type_of_heroes'] == $canYouUse || $row['for_type_of_heroes'] ==0) {

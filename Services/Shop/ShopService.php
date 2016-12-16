@@ -176,10 +176,10 @@ class ShopService extends AbstractService implements ShopServiceInterface
              },
             ],
             'id' => [
-                'title' => 'Bye item',
+                'title' => 'Buy item',
                 'type' => self::TYPE_DATA,
                 'value' => function ($value) {
-                    return 'Bye item';
+                    return 'Buy item';
                 },
                 'onClick' => function ($row){
                     return $this->view->uri('shop', 'byeItem', ['shopItemId' => $row['id']]);
@@ -308,10 +308,10 @@ class ShopService extends AbstractService implements ShopServiceInterface
                         throw new GameException('Can not add item to inventory');
                     }
 
-                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    Message::postMessage('You successfully buy item', Message::POSITIVE_MESSAGE);
                     return $shopType;
                 } else {
-                    Message::postMessage("You are need {$checkIsEnoughGold['is_enogh']} Gold, to bye this item", Message::NEGATIVE_MESSAGE);
+                    Message::postMessage("You need {$checkIsEnoughGold['is_enogh']} Gold, to buy this item", Message::NEGATIVE_MESSAGE);
                     return $shopType;
                 }
 
@@ -349,11 +349,11 @@ class ShopService extends AbstractService implements ShopServiceInterface
                         throw new GameException('Can not add item to inventory');
                     }
 
-                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    Message::postMessage('You successfully buy item', Message::POSITIVE_MESSAGE);
                     return $shopType;
 
                 } else {
-                    Message::postMessage("You are need {$checkIsEnoughHonor['is_enogh']} Honor, to bye this item", Message::NEGATIVE_MESSAGE);
+                    Message::postMessage("You need {$checkIsEnoughHonor['is_enogh']} Honor, to buy this item", Message::NEGATIVE_MESSAGE);
                     return $shopType;
                 }
 
@@ -421,10 +421,10 @@ class ShopService extends AbstractService implements ShopServiceInterface
                         throw new GameException('Can not delete item from shop');
                     }
 
-                    Message::postMessage('You successfully bye item', Message::POSITIVE_MESSAGE);
+                    Message::postMessage('You successfully buy item', Message::POSITIVE_MESSAGE);
                     return $shopType;
                 } else {
-                    Message::postMessage("You are need {$checkIsEnoughGold['is_enogh']} Gold, to bye this item", Message::NEGATIVE_MESSAGE);
+                    Message::postMessage("You need {$checkIsEnoughGold['is_enogh']} Gold, to buy this item", Message::NEGATIVE_MESSAGE);
                     return $shopType;
                 }
 
