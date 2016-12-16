@@ -47,7 +47,7 @@ $uriJunk = isset($uriJunk) ? $uriJunk : '';
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
-                <li><a href="#"></a></li>
+                <li><a target="_blank" href="https://github.com/filippopov/Midgard">GitHub</a></li>
             </ul>
         </div>
     </div>
