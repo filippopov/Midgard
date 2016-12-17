@@ -195,10 +195,19 @@ class CreateItemService extends AbstractService implements CreateItemServiceInte
             'type_of_item' => $dropDownForTypeOfItems
         ];
 
+        $heroId = $this->authenticationService->getHeroId();
+
+        if (! $heroId) {
+            throw new GameException('Not set hero id');
+        }
+
+        $resources = $this->resourcesRepository->getResourcesForOneHero([$heroId]);
+
         $table = [
             'tableSearchFields' => $searchFields,
             'tableData' => $data,
             'filter' => $this->pageFilters($bindFilter),
+            'resources' => $resources
         ];
 
         return $table;

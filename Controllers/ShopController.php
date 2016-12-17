@@ -53,6 +53,7 @@ class ShopController
         $getParams['typeOfShop'] = $typeOfShop;
 
         $allItemsInShop = $this->shopService->shopItems($getParams);
+
         $params = ['model' => $allItemsInShop];
         $this->view->render($params);
     }

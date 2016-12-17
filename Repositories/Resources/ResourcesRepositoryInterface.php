@@ -11,5 +11,5 @@ namespace FPopov\Repositories\Resources;
 
 interface ResourcesRepositoryInterface
 {
-
+    public function getResourcesForOneHero($params = []);
 }

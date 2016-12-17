@@ -227,10 +227,13 @@ class ShopService extends AbstractService implements ShopServiceInterface
             'type_of_item' => $dropDownForTypeOfItems
         ];
 
+        $resources = $this->resourcesRepository->getResourcesForOneHero([$heroId]);
+
         $table = [
             'tableSearchFields' => $searchFields,
             'tableData' => $data,
             'filter' => $this->pageFilters($bindFilter),
+            'resources' => $resources
         ];
 
         return $table;
