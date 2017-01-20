@@ -41,6 +41,20 @@ class SkillsController
 
     public function showSkills()
     {
-        dd('Under development');
+        if (! $this->authenticationService->isAuthenticated()) {
+            $this->responseService->redirect('users', 'login');
+        }
+
+        if (! $this->authenticationService->isAuthenticatedHero()) {
+            $this->responseService->redirect('heroes', 'createHero');
+        }
+
+        $getParams = $this->MVCContext->getGetParams();
+
+        $allSkills = $this->skillsService->showSkills();
+
+        $params = ['model' => $allSkills];
+
+        $this->view->render($params);
     }
 }

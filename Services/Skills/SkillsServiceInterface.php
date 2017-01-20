@@ -11,5 +11,5 @@ namespace FPopov\Services\Skills;
 
 interface SkillsServiceInterface
 {
-    public function showSkills();
+    public function showSkills($params = []);
 }
